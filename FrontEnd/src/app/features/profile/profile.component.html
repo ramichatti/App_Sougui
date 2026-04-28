@@ -1,0 +1,261 @@
+<div class="pf-container">
+  <div class="pf-content">
+
+    <!-- ── Header ───────────────────────────────────────────────────────────── -->
+    <div class="pf-header">
+      <div class="pf-header-left">
+        <div class="pf-header-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="pf-title">Mon Profil</h1>
+          <p class="pf-subtitle">Gérez vos informations personnelles et votre sécurité</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Alerts ────────────────────────────────────────────────────────────── -->
+    @if (message()) {
+      <div class="pf-alert pf-alert--success">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ message() }}
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="pf-alert pf-alert--error">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- ── Main grid ──────────────────────────────────────────────────────────── -->
+    <div class="pf-grid">
+
+      <!-- ═══ LEFT COLUMN ═══════════════════════════════════════════════════ -->
+      <div class="pf-col-left">
+
+        <!-- Photo card -->
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Photo de profil
+          </div>
+
+          <div class="photo-section">
+            <div class="photo-wrap" (click)="fileInput.click()">
+              @if (hasProfileImage()) {
+                <img [src]="getProfileImage()" alt="Photo de profil" class="photo-img"/>
+              } @else {
+                <div class="photo-initials">{{ getUserInitials() }}</div>
+              }
+              <div class="photo-overlay">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>Changer</span>
+              </div>
+            </div>
+            <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display:none"/>
+
+            @if (authService.currentUser(); as user) {
+              <div class="photo-name">{{ user.first_name }} {{ user.last_name }}</div>
+              <div class="photo-email">{{ user.email }}</div>
+            }
+
+            <p class="photo-hint">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              JPG, PNG, GIF ou WebP · Max 5 MB
+            </p>
+
+            @if (selectedFile) {
+              <button class="btn-upload" (click)="uploadImage()" [disabled]="isLoading()">
+                @if (isLoading()) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="spin"><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                }
+                {{ isLoading() ? 'Envoi…' : 'Enregistrer la photo' }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Role & Privileges card -->
+        @if (authService.currentUser(); as user) {
+          <div class="pf-card">
+            <div class="pf-card-head">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Rôle &amp; Privilèges
+            </div>
+
+            <div class="role-badge-wrap">
+              @if (user.is_admin) {
+                <span class="role-badge role-badge--admin">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  {{ user.role || 'Administrateur' }}
+                </span>
+                <span class="admin-label">Accès administrateur complet</span>
+              } @else {
+                <span class="role-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  {{ user.role || 'Aucun rôle' }}
+                </span>
+              }
+            </div>
+
+            <p class="priv-section-label">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+              Tableaux de bord accessibles
+            </p>
+
+            @if (user.privileges && user.privileges.length > 0) {
+              <div class="priv-list">
+                @for (p of user.privileges; track p.id) {
+                  <div class="priv-item">
+                    <div class="priv-icon">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    </div>
+                    <div class="priv-info">
+                      <span class="priv-name">{{ p.name }}</span>
+                      @if (p.dashboard_name) {
+                        <span class="priv-dash">{{ p.dashboard_name }}</span>
+                      }
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M9 12l2 2 4-4"/></svg>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="no-priv">Aucun privilège assigné à votre rôle.</p>
+            }
+          </div>
+        }
+
+      </div><!-- /pf-col-left -->
+
+      <!-- ═══ RIGHT COLUMN ══════════════════════════════════════════════════ -->
+      <div class="pf-col-right">
+
+        <!-- Personal info card -->
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Informations personnelles
+          </div>
+
+          <form (ngSubmit)="updateProfile()">
+            <div class="form-row">
+              <div class="form-field">
+                <label class="field-label">Prénom <span class="req">*</span></label>
+                <input class="field-input" type="text" [(ngModel)]="profileForm.first_name"
+                  name="first_name" required minlength="2" maxlength="50" placeholder="Prénom"/>
+              </div>
+              <div class="form-field">
+                <label class="field-label">Nom <span class="req">*</span></label>
+                <input class="field-input" type="text" [(ngModel)]="profileForm.last_name"
+                  name="last_name" required minlength="2" maxlength="50" placeholder="Nom"/>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">Email <span class="req">*</span></label>
+              <input class="field-input" type="email" [(ngModel)]="profileForm.email"
+                name="email" required placeholder="votre@email.com"/>
+            </div>
+
+            <button type="submit" class="btn-primary btn-full" [disabled]="isLoading()">
+              @if (isLoading()) {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="spin"><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                Enregistrement…
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+                Enregistrer les modifications
+              }
+            </button>
+          </form>
+        </div>
+
+        <!-- Password change card -->
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Changer le mot de passe
+          </div>
+
+          @if (!showPasswordForm()) {
+            <div class="pwd-info-banner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Un code de vérification sera envoyé à votre adresse email avant de modifier votre mot de passe.
+            </div>
+            <button class="btn-primary btn-full" type="button" (click)="requestPasswordChange()" [disabled]="isLoading()">
+              @if (isLoading()) {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="spin"><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                Envoi…
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Envoyer le code de vérification
+              }
+            </button>
+          }
+
+          @if (showPasswordForm() && !codeVerified()) {
+            <form (ngSubmit)="verifyCode()">
+              <div class="form-field">
+                <label class="field-label">Code de vérification <span class="req">*</span></label>
+                <input class="field-input code-input" type="text" [(ngModel)]="verificationCode"
+                  name="code" required maxlength="6" placeholder="000000" autocomplete="off"/>
+                <small class="field-hint">Code à 6 chiffres envoyé à votre email</small>
+              </div>
+              <div class="btn-row">
+                <button type="button" class="btn-secondary" (click)="cancelPasswordChange()">Annuler</button>
+                <button type="submit" class="btn-primary" [disabled]="isLoading()">
+                  @if (isLoading()) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="spin"><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+                  }
+                  Vérifier
+                </button>
+              </div>
+            </form>
+          }
+
+          @if (codeVerified()) {
+            <form (ngSubmit)="changePassword()">
+              <div class="form-field">
+                <label class="field-label">Mot de passe actuel <span class="req">*</span></label>
+                <input class="field-input" type="password" [(ngModel)]="passwordForm.current_password"
+                  name="current_password" required autocomplete="current-password" placeholder="••••••••"/>
+              </div>
+              <div class="form-field">
+                <label class="field-label">Nouveau mot de passe <span class="req">*</span></label>
+                <input class="field-input" type="password" [(ngModel)]="passwordForm.new_password"
+                  name="new_password" required minlength="6" autocomplete="new-password" placeholder="••••••••"/>
+                <small class="field-hint">Au moins 6 caractères, 1 majuscule, 1 minuscule et 1 chiffre</small>
+              </div>
+              <div class="form-field">
+                <label class="field-label">Confirmer le mot de passe <span class="req">*</span></label>
+                <input class="field-input" type="password" [(ngModel)]="passwordForm.confirm_password"
+                  name="confirm_password" required minlength="6" autocomplete="new-password" placeholder="••••••••"/>
+              </div>
+              <div class="btn-row">
+                <button type="button" class="btn-secondary" (click)="cancelPasswordChange()">Annuler</button>
+                <button type="submit" class="btn-primary" [disabled]="isLoading()">
+                  @if (isLoading()) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="spin"><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+                  }
+                  Modifier le mot de passe
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+
+      </div><!-- /pf-col-right -->
+
+    </div><!-- /pf-grid -->
+
+  </div>
+</div>

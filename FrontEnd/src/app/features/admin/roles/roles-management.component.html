@@ -1,0 +1,501 @@
+<div class="rm-container">
+  <div class="rm-content">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <div class="rm-header">
+      <div class="rm-header-left">
+        <div class="rm-header-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="rm-title">Rôles &amp; Accès</h1>
+          <p class="rm-subtitle">Gérez les rôles, privilèges et membres de votre équipe</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── KPIs ───────────────────────────────────────────────────────────── -->
+    <div class="rm-kpis">
+      <div class="rm-kpi rm-kpi--blue" (click)="activeTab = 'roles'">
+        <div class="rm-kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div class="rm-kpi-val">{{ totalRoles }}</div>
+          <div class="rm-kpi-lbl">Rôles</div>
+        </div>
+      </div>
+      <div class="rm-kpi rm-kpi--purple" (click)="activeTab = 'privileges'">
+        <div class="rm-kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        </div>
+        <div>
+          <div class="rm-kpi-val">{{ totalPrivileges }}</div>
+          <div class="rm-kpi-lbl">Privilèges</div>
+        </div>
+      </div>
+      <div class="rm-kpi rm-kpi--green" (click)="activeTab = 'users'">
+        <div class="rm-kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div>
+          <div class="rm-kpi-val">{{ totalUsers }}</div>
+          <div class="rm-kpi-lbl">Utilisateurs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tabs ───────────────────────────────────────────────────────────── -->
+    <div class="rm-tabs">
+      <button class="rm-tab" [class.rm-tab--active]="activeTab === 'roles'" (click)="activeTab = 'roles'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Rôles
+        <span class="tab-badge">{{ totalRoles }}</span>
+      </button>
+      <button class="rm-tab" [class.rm-tab--active]="activeTab === 'privileges'" (click)="activeTab = 'privileges'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        Privilèges
+        <span class="tab-badge">{{ totalPrivileges }}</span>
+      </button>
+      <button class="rm-tab" [class.rm-tab--active]="activeTab === 'users'" (click)="activeTab = 'users'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Utilisateurs
+        <span class="tab-badge">{{ totalUsers }}</span>
+      </button>
+    </div>
+
+    <!-- ══════════════════ ROLES TAB ══════════════════════════════════════ -->
+    @if (activeTab === 'roles') {
+      <div class="split">
+
+        <!-- Left: Role list -->
+        <div class="split-left">
+          <div class="panel-head">
+            <div class="panel-head-left">
+              <span class="panel-title">Rôles</span>
+              <span class="count-chip">{{ filteredRoles().length }}</span>
+            </div>
+            <button class="btn-add" (click)="openRoleModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4v16m8-8H4"/></svg>
+              Nouveau
+            </button>
+          </div>
+
+          <!-- Search -->
+          <div class="panel-search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="panel-search-input" type="text" [(ngModel)]="roleSearch" placeholder="Filtrer les rôles…"/>
+            @if (roleSearch) {
+              <button class="panel-search-clear" (click)="roleSearch = ''">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            }
+          </div>
+
+          @if (isLoading()) {
+            <div class="skeleton-list">
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+            </div>
+          }
+
+          <div class="role-list">
+            @for (role of filteredRoles(); track role.id) {
+              <div class="role-row" [class.role-row--selected]="selectedRole()?.id === role.id" (click)="selectRole(role)">
+                <div class="role-avatar" [class.role-avatar--admin]="role.is_admin">
+                  @if (role.is_admin) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  }
+                </div>
+                <div class="role-info">
+                  <div class="role-name">
+                    {{ role.name }}
+                    @if (role.is_admin) { <span class="pill pill--admin">Admin</span> }
+                    @if (role.is_system) { <span class="pill pill--system">Système</span> }
+                    @if (!role.is_active) { <span class="pill pill--inactive">Inactif</span> }
+                  </div>
+                  <div class="role-meta">
+                    <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg> {{ role.privilege_count || 0 }}</span>
+                    <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> {{ getUsersForRole(role).length }}</span>
+                  </div>
+                </div>
+                <div class="role-actions" (click)="$event.stopPropagation()">
+                  <button class="icon-btn icon-btn--edit" (click)="openRoleModal(role)" title="Modifier">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="icon-btn icon-btn--del" (click)="deleteRole(role)" [disabled]="role.is_system" title="Supprimer">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                  </button>
+                </div>
+              </div>
+            }
+            @if (!isLoading() && filteredRoles().length === 0) {
+              <div class="list-empty">
+                @if (roleSearch) {
+                  <p>Aucun rôle pour « {{ roleSearch }} »</p>
+                } @else {
+                  <p>Aucun rôle défini</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Right: Detail -->
+        <div class="split-right">
+          @if (selectedRole(); as role) {
+            <div class="detail-card">
+
+              <!-- Detail head -->
+              <div class="detail-head">
+                <div class="detail-avatar" [class.detail-avatar--admin]="role.is_admin">
+                  @if (role.is_admin) {
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  } @else {
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  }
+                </div>
+                <div class="detail-head-info">
+                  <h3 class="detail-name">{{ role.name }}</h3>
+                  <p class="detail-desc">{{ role.description || 'Aucune description' }}</p>
+                  <div class="detail-pills">
+                    @if (role.is_admin) { <span class="pill pill--admin">Administrateur</span> }
+                    @if (role.is_system) { <span class="pill pill--system">Système</span> }
+                    @if (!role.is_active) { <span class="pill pill--inactive">Inactif</span> }
+                    @if (role.is_active && !role.is_admin) { <span class="pill pill--ok">Actif</span> }
+                  </div>
+                </div>
+                <button class="close-btn" (click)="closeDetail()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <!-- Privileges section -->
+              <div class="detail-section">
+                <div class="section-head">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                  Privilèges d'accès
+                  <span class="count-chip count-chip--purple">{{ role.privileges?.length || 0 }}</span>
+                </div>
+
+                <div class="chips-wrap">
+                  @if (!role.privileges?.length) {
+                    <p class="empty-hint">Aucun privilège assigné à ce rôle.</p>
+                  }
+                  @for (p of role.privileges; track p.id) {
+                    <div class="priv-chip">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                      <span>{{ p.name }}</span>
+                      @if (p.dashboard_name) {
+                        <span class="chip-dash">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                          {{ p.dashboard_name }}
+                        </span>
+                      }
+                      <button class="chip-remove" (click)="removePrivilege(role, p)" title="Retirer">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                @if (unassignedPrivileges().length > 0) {
+                  <div class="assign-row">
+                    <select class="assign-select" [(ngModel)]="selectedPrivilegeId">
+                      <option [ngValue]="null">— Sélectionner un privilège —</option>
+                      @for (p of unassignedPrivileges(); track p.id) {
+                        <option [ngValue]="p.id">{{ p.name }}{{ p.dashboard_name ? ' · ' + p.dashboard_name : '' }}</option>
+                      }
+                    </select>
+                    <button class="btn-assign" (click)="assignPrivilege()" [disabled]="!selectedPrivilegeId">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4v16m8-8H4"/></svg>
+                      Assigner
+                    </button>
+                  </div>
+                }
+              </div>
+
+              <!-- Members section -->
+              <div class="detail-section">
+                <div class="section-head">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                  Membres
+                  <span class="count-chip count-chip--green">{{ getUsersForRole(role).length }}</span>
+                </div>
+
+                <div class="members-list">
+                  @if (!getUsersForRole(role).length) {
+                    <p class="empty-hint">Aucun utilisateur assigné à ce rôle.</p>
+                  }
+                  @for (u of getUsersForRole(role); track u.id) {
+                    <div class="member-row">
+                      <div class="member-avatar">{{ getUserInitials(u) }}</div>
+                      <div class="member-info">
+                        <span class="member-name">{{ u.first_name }} {{ u.last_name }}</span>
+                        <span class="member-email">{{ u.email }}</span>
+                      </div>
+                      <span class="status-dot" [class.status-dot--active]="u.is_active" [title]="u.is_active ? 'Actif' : 'Inactif'"></span>
+                      <button class="icon-btn icon-btn--del" (click)="removeUserFromRole(u)" title="Retirer du rôle">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                @if (getUsersNotInRole(role).length > 0) {
+                  <div class="assign-row">
+                    <select class="assign-select" [(ngModel)]="selectedUserId">
+                      <option [ngValue]="null">— Sélectionner un utilisateur —</option>
+                      @for (u of getUsersNotInRole(role); track u.id) {
+                        <option [ngValue]="u.id">{{ u.first_name }} {{ u.last_name }} ({{ u.email }})</option>
+                      }
+                    </select>
+                    <button class="btn-assign btn-assign--green" (click)="assignUserToCurrentRole()" [disabled]="!selectedUserId">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                      Ajouter
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+          } @else {
+            <div class="detail-empty">
+              <div class="detail-empty-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <h4>Sélectionnez un rôle</h4>
+              <p>Cliquez sur un rôle pour gérer ses privilèges et ses membres.</p>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+    <!-- ══════════════════ PRIVILEGES TAB ══════════════════════════════════ -->
+    @if (activeTab === 'privileges') {
+      <div class="tab-toolbar">
+        <h2 class="tab-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          Privilèges
+        </h2>
+        <button class="btn-add" (click)="openPrivilegeModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4v16m8-8H4"/></svg>
+          Nouveau privilège
+        </button>
+      </div>
+
+      <div class="table-card">
+        <table class="priv-table">
+          <thead>
+            <tr>
+              <th>Privilège</th>
+              <th>Description</th>
+              <th>Dashboard lié</th>
+              <th>Rôles</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of privileges(); track p.id) {
+              <tr class="priv-row">
+                <td>
+                  <div class="priv-cell">
+                    <div class="priv-mini-icon">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    </div>
+                    <strong>{{ p.name }}</strong>
+                  </div>
+                </td>
+                <td class="td-muted">{{ p.description || '—' }}</td>
+                <td>
+                  @if (p.dashboard_name) {
+                    <span class="dash-tag">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                      {{ p.dashboard_name }}
+                    </span>
+                  } @else {
+                    <span class="td-muted">—</span>
+                  }
+                </td>
+                <td>
+                  <div class="roles-tags">
+                    @for (r of roles(); track r.id) {
+                      @if (r.privileges && isPrivilegeInRole(r, p.id)) {
+                        <span class="role-tag" [class.role-tag--admin]="r.is_admin">{{ r.name }}</span>
+                      }
+                    }
+                  </div>
+                </td>
+                <td>
+                  <div class="td-actions">
+                    <button class="icon-btn icon-btn--edit" (click)="openPrivilegeModal(p)" title="Modifier">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="icon-btn icon-btn--del" (click)="deletePrivilege(p)" title="Supprimer">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (!privileges().length) {
+              <tr><td colspan="5" class="td-empty">Aucun privilège défini.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ══════════════════ USERS TAB ══════════════════════════════════════ -->
+    @if (activeTab === 'users') {
+      <div class="tab-toolbar">
+        <h2 class="tab-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Affecter des rôles
+        </h2>
+      </div>
+
+      <div class="users-grid">
+        @for (user of users(); track user.id) {
+          <div class="user-card" [class.user-card--admin]="user.is_admin">
+            <div class="user-card-top">
+              <div class="user-avatar" [style.background]="getRoleColor(user.role_id)">{{ getUserInitials(user) }}</div>
+              <div class="user-info">
+                <p class="user-name">{{ user.first_name }} {{ user.last_name }}</p>
+                <p class="user-email">{{ user.email }}</p>
+              </div>
+              <span class="status-dot" [class.status-dot--active]="user.is_active" [title]="user.is_active ? 'Actif' : 'Inactif'"></span>
+            </div>
+
+            <div class="user-current-role">
+              <span class="role-lbl">Rôle actuel</span>
+              <span class="role-badge" [class.role-badge--admin]="user.is_admin">
+                @if (user.is_admin) {
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                }
+                {{ user.role || 'Aucun rôle' }}
+              </span>
+            </div>
+
+            <div class="user-role-change">
+              <label class="change-lbl">Nouveau rôle</label>
+              <select class="role-select" [(ngModel)]="userRoleChanges[user.id]">
+                @for (r of roles(); track r.id) {
+                  <option [ngValue]="r.id">{{ r.name }}</option>
+                }
+              </select>
+            </div>
+
+            <button class="btn-save-role"
+                    (click)="saveUserRole(user.id)"
+                    [disabled]="!hasRoleChanged(user.id, user.role_id)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+              Enregistrer
+            </button>
+          </div>
+        }
+        @if (!users().length) {
+          <div class="list-empty" style="grid-column:1/-1">Aucun utilisateur trouvé.</div>
+        }
+      </div>
+    }
+
+  </div><!-- /rm-content -->
+
+  <!-- ══════════════ ROLE MODAL ══════════════════════════════════════════ -->
+  @if (showRoleModal()) {
+    <div class="modal-overlay" (click)="closeRoleModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-head">
+          <div class="modal-icon modal-icon--blue">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>{{ editingRole() ? 'Modifier le rôle' : 'Nouveau rôle' }}</h3>
+          <button class="modal-x" (click)="closeRoleModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mfield">
+            <label>Nom du rôle <span class="req">*</span></label>
+            <input class="minput" [(ngModel)]="roleForm.name" placeholder="ex: directeur_commercial"
+                   [disabled]="editingRole()?.is_system || false"/>
+          </div>
+          <div class="mfield">
+            <label>Description</label>
+            <textarea class="minput" [(ngModel)]="roleForm.description" rows="2" placeholder="Décrivez ce rôle…"></textarea>
+          </div>
+          @if (!editingRole()?.is_system) {
+            <label class="mcheck">
+              <input type="checkbox" [(ngModel)]="roleForm.is_admin"/>
+              <span>Accès administrateur complet</span>
+            </label>
+          }
+          <label class="mcheck">
+            <input type="checkbox" [(ngModel)]="roleForm.is_active"/>
+            <span>Rôle actif</span>
+          </label>
+        </div>
+        <div class="modal-foot">
+          <button class="btn-cancel" (click)="closeRoleModal()">Annuler</button>
+          <button class="btn-confirm" (click)="saveRole()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+            {{ editingRole() ? 'Mettre à jour' : 'Créer le rôle' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════ PRIVILEGE MODAL ════════════════════════════════════ -->
+  @if (showPrivilegeModal()) {
+    <div class="modal-overlay" (click)="closePrivilegeModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-head">
+          <div class="modal-icon modal-icon--purple">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          </div>
+          <h3>{{ editingPrivilege() ? 'Modifier le privilège' : 'Nouveau privilège' }}</h3>
+          <button class="modal-x" (click)="closePrivilegeModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mfield">
+            <label>Nom du privilège <span class="req">*</span></label>
+            <input class="minput" [(ngModel)]="privilegeForm.name" placeholder="ex: Voir Dashboard Ventes"/>
+          </div>
+          <div class="mfield">
+            <label>Description</label>
+            <textarea class="minput" [(ngModel)]="privilegeForm.description" rows="2" placeholder="Description courte…"></textarea>
+          </div>
+          <div class="mfield">
+            <label>Dashboard lié <span class="opt">(optionnel)</span></label>
+            <select class="minput" [(ngModel)]="privilegeForm.dashboard_id">
+              <option [ngValue]="null">— Aucun dashboard —</option>
+              @for (d of dashboards(); track d.id) {
+                <option [ngValue]="d.id">{{ d.dashboard_name }}</option>
+              }
+            </select>
+            <small class="mhint">Ce privilège donnera accès à ce tableau de bord.</small>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn-cancel" (click)="closePrivilegeModal()">Annuler</button>
+          <button class="btn-confirm btn-confirm--purple" (click)="savePrivilege()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+            {{ editingPrivilege() ? 'Mettre à jour' : 'Créer le privilège' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

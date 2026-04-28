@@ -1,0 +1,41 @@
+<div class="dashboard-container">
+  <div class="dashboard-content">
+    @if (isLoading()) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="alert alert-error">
+        {{ errorMessage() }}
+      </div>
+    } @else if (dashboards().length === 0) {
+      <div class="card">
+        <div class="no-dashboards">
+          <div class="no-dashboards-icon">📊</div>
+          <h3>{{ translationService.translate('dashboard.noDashboards') }}</h3>
+          <p>{{ translationService.translate('dashboard.noDashboardsDesc') }}</p>
+        </div>
+      </div>
+    } @else {
+      <!-- Current Dashboard Display -->
+      @if (getCurrentDashboard(); as currentDashboard) {
+        <div class="dashboard-card">
+          <div class="dashboard-card-header">
+            <div class="header-content">
+              <h2 class="dashboard-card-title">{{ currentDashboard.dashboard_name }}</h2>
+              @if (currentDashboard.description) {
+                <p class="dashboard-card-description">{{ currentDashboard.description }}</p>
+              }
+            </div>
+          </div>
+          <iframe
+            [src]="getSafeUrl(currentDashboard.embed_url)"
+            class="powerbi-iframe"
+            frameborder="0"
+            allowFullScreen="true"
+          ></iframe>
+        </div>
+      }
+    }
+  </div>
+</div>

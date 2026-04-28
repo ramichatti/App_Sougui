@@ -1,0 +1,246 @@
+<div class="reclamations-container">
+  <app-navbar></app-navbar>
+
+  <div class="reclamations-content">
+    <div class="reclamations-header">
+      <h1>{{ translationService.translate('reclamations.title') }}</h1>
+      <button class="btn btn-primary" (click)="openModal()">
+        + {{ translationService.translate('reclamations.new') }}
+      </button>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="search-filter-bar">
+      <input
+        type="text"
+        class="search-input"
+        [(ngModel)]="searchTerm"
+        (input)="filterReclamations()"
+        [placeholder]="translationService.translate('common.search')"
+      />
+      <select class="form-control" [(ngModel)]="filterStatus" (change)="filterReclamations()" style="max-width: 200px;">
+        <option value="">{{ translationService.translate('reclamations.allStatus') }}</option>
+        <option value="nouvelle">{{ translationService.translate('status.nouvelle') }}</option>
+        <option value="en_cours">{{ translationService.translate('status.en_cours') }}</option>
+        <option value="resolue">{{ translationService.translate('status.resolue') }}</option>
+        <option value="fermee">{{ translationService.translate('status.fermee') }}</option>
+      </select>
+      <select class="form-control" [(ngModel)]="filterPriority" (change)="filterReclamations()" style="max-width: 200px;">
+        <option value="">{{ translationService.translate('reclamations.allPriority') }}</option>
+        <option value="basse">{{ translationService.translate('priority.basse') }}</option>
+        <option value="moyenne">{{ translationService.translate('priority.moyenne') }}</option>
+        <option value="haute">{{ translationService.translate('priority.haute') }}</option>
+        <option value="urgente">{{ translationService.translate('priority.urgente') }}</option>
+      </select>
+    </div>
+
+    @if (message()) {
+      <div class="alert alert-success">{{ message() }}</div>
+    }
+
+    @if (isLoading()) {
+      <div class="spinner"></div>
+    } @else if (reclamations().length === 0) {
+      <div class="card">
+        <div style="text-align: center; padding: 40px;">
+          <div style="font-size: 64px; margin-bottom: 16px;">📋</div>
+          <h3>{{ translationService.translate('reclamations.noReclamations') }}</h3>
+          <p>{{ translationService.translate('reclamations.noReclamationsDesc') }}</p>
+        </div>
+      </div>
+    } @else {
+      <div class="reclamations-list">
+        @for (reclamation of filteredReclamations(); track reclamation.id) {
+          <div class="reclamation-card">
+            <div class="reclamation-header">
+              <div>
+                <h3 class="reclamation-title">{{ reclamation.title }}</h3>
+                <div class="reclamation-meta">
+                  <span class="badge" [ngClass]="'badge-' + reclamation.status">
+                    {{ getStatusLabel(reclamation.status) }}
+                  </span>
+                  <span class="badge" [ngClass]="'badge-' + reclamation.priority">
+                    {{ getPriorityLabel(reclamation.priority) }}
+                  </span>
+                  <span class="badge">{{ getCategoryLabel(reclamation.category) }}</span>
+                  @if (reclamation.has_attachment) {
+                    <span class="badge badge-attachment">📎 {{ translationService.translate('reclamations.hasAttachment') }}</span>
+                  }
+                </div>
+              </div>
+              <div class="reclamation-actions">
+                <button class="btn-icon" (click)="viewDetails(reclamation)" title="{{ translationService.translate('reclamations.viewDetails') }}">
+                  👁️
+                </button>
+                @if (reclamation.status === 'nouvelle') {
+                  <button class="btn-icon btn-delete" (click)="deleteReclamation(reclamation.id)" title="{{ translationService.translate('reclamations.delete') }}">
+                    🗑️
+                  </button>
+                }
+              </div>
+            </div>
+
+            <p class="reclamation-description">{{ reclamation.description.substring(0, 150) }}{{ reclamation.description.length > 150 ? '...' : '' }}</p>
+
+            @if (reclamation.response) {
+              <div class="reclamation-response">
+                <strong>{{ translationService.translate('reclamations.response') }}:</strong><br>
+                {{ reclamation.response.substring(0, 100) }}{{ reclamation.response.length > 100 ? '...' : '' }}
+              </div>
+            }
+
+            <div class="reclamation-date">
+              {{ translationService.translate('reclamations.createdOn') }} {{ reclamation.created_at | date:'dd/MM/yyyy à HH:mm' }}
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal Nouvelle Réclamation -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2 class="modal-title">{{ translationService.translate('reclamations.new') }}</h2>
+
+      <form (ngSubmit)="createReclamation()">
+        <div class="form-group">
+          <label class="form-label">{{ translationService.translate('reclamations.title_field') }} <span class="required">*</span></label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="reclamationForm.title"
+            name="title"
+            required
+            minlength="5"
+            maxlength="200"
+            [placeholder]="translationService.translate('reclamations.titlePlaceholder')"
+          />
+          <small class="form-hint">{{ translationService.translate('reclamations.titleHint') }}</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ translationService.translate('reclamations.category') }} <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="reclamationForm.category" name="category" required>
+            <option value="technique">{{ translationService.translate('category.technique') }}</option>
+            <option value="commercial">{{ translationService.translate('category.commercial') }}</option>
+            <option value="produit">{{ translationService.translate('category.produit') }}</option>
+            <option value="service">{{ translationService.translate('category.service') }}</option>
+            <option value="autre">{{ translationService.translate('category.autre') }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ translationService.translate('reclamations.priority') }} <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="reclamationForm.priority" name="priority" required>
+            <option value="basse">{{ translationService.translate('priority.basse') }}</option>
+            <option value="moyenne">{{ translationService.translate('priority.moyenne') }}</option>
+            <option value="haute">{{ translationService.translate('priority.haute') }}</option>
+            <option value="urgente">{{ translationService.translate('priority.urgente') }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ translationService.translate('reclamations.description') }} <span class="required">*</span></label>
+          <textarea
+            class="form-control"
+            [(ngModel)]="reclamationForm.description"
+            name="description"
+            rows="5"
+            required
+            minlength="10"
+            maxlength="2000"
+            [placeholder]="translationService.translate('reclamations.descriptionPlaceholder')"
+          ></textarea>
+          <small class="form-hint">{{ translationService.translate('reclamations.descriptionHint') }}</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ translationService.translate('reclamations.attachment') }}</label>
+          @if (!reclamationForm.attachment) {
+            <input
+              type="file"
+              class="form-control"
+              (change)="onFileSelected($event)"
+              accept="image/*,.pdf,.doc,.docx,.txt"
+            />
+            <small class="form-hint">{{ translationService.translate('reclamations.attachmentHint') }}</small>
+          } @else {
+            <div class="attachment-preview">
+              <span>📎 {{ reclamationForm.attachment_name }}</span>
+              <button type="button" class="btn-icon" (click)="removeAttachment()">❌</button>
+            </div>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading()">
+            {{ isLoading() ? translationService.translate('reclamations.creating') : translationService.translate('reclamations.create') }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">
+            {{ translationService.translate('reclamations.cancel') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Modal Détails Réclamation -->
+@if (showDetailModal() && selectedReclamation()) {
+  <div class="modal-overlay" (click)="closeDetailModal()">
+    <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+      <h2 class="modal-title">{{ translationService.translate('reclamations.details') }}</h2>
+
+      <div class="detail-section">
+        <h3>{{ selectedReclamation()!.title }}</h3>
+        
+        <div class="detail-badges">
+          <span class="badge" [ngClass]="'badge-' + selectedReclamation()!.status">
+            {{ getStatusLabel(selectedReclamation()!.status) }}
+          </span>
+          <span class="badge" [ngClass]="'badge-' + selectedReclamation()!.priority">
+            {{ getPriorityLabel(selectedReclamation()!.priority) }}
+          </span>
+          <span class="badge">{{ getCategoryLabel(selectedReclamation()!.category) }}</span>
+        </div>
+
+        <div class="detail-info">
+          <p><strong>{{ translationService.translate('reclamations.createdOn') }}:</strong> {{ selectedReclamation()!.created_at | date:'dd/MM/yyyy à HH:mm' }}</p>
+          @if (selectedReclamation()!.resolved_at) {
+            <p><strong>{{ translationService.translate('reclamations.resolvedOn') }}:</strong> {{ selectedReclamation()!.resolved_at | date:'dd/MM/yyyy à HH:mm' }}</p>
+          }
+        </div>
+
+        <div class="detail-description">
+          <h4>{{ translationService.translate('reclamations.description') }}</h4>
+          <p>{{ selectedReclamation()!.description }}</p>
+        </div>
+
+        @if (selectedReclamation()!.has_attachment) {
+          <div class="detail-attachment">
+            <h4>{{ translationService.translate('reclamations.attachment') }}</h4>
+            <button class="btn btn-secondary" (click)="downloadAttachment(selectedReclamation()!)">
+              📎 {{ translationService.translate('reclamations.downloadAttachment') }}
+            </button>
+          </div>
+        }
+
+        @if (selectedReclamation()!.response) {
+          <div class="detail-response">
+            <h4>{{ translationService.translate('reclamations.adminResponse') }}</h4>
+            <p>{{ selectedReclamation()!.response }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+          {{ translationService.translate('reclamations.close') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

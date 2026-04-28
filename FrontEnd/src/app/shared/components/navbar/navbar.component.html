@@ -1,0 +1,201 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <a routerLink="/home" class="navbar-brand">
+      <div class="logo-wrapper">
+        <img src="assets/images/LogoSougui.png" alt="Sougui Logo" class="brand-logo-img" />
+      </div>
+      <div class="brand-text">
+        <h1>Sougui</h1>
+        <p>{{ translate.translate('login.subtitle') }}</p>
+      </div>
+    </a>
+
+    <button class="menu-toggle" (click)="toggleMenu()" [class.active]="menuOpen">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+
+    <ul class="navbar-menu" [class.open]="menuOpen">
+      <li>
+        <a routerLink="/home" routerLinkActive="active" (click)="closeMenu()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          {{ translate.translate('nav.home') }}
+        </a>
+      </li>
+
+      @if (authService.currentUser(); as user) {
+        <!-- Dashboards Dropdown -->
+        @if (user.privileges && user.privileges.length > 0) {
+          <li class="dashboards-dropdown-wrapper" [class.open]="dashboardsDropdownOpen" (mouseenter)="openDashboardsDropdown()" (mouseleave)="closeDashboardsDropdown()">
+            <a class="dashboards-trigger" [class.active]="isDashboardRoute()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              {{ translate.translate('nav.dashboard') }}
+              <svg class="dropdown-arrow-small" width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                <path d="M6 9L1 4h10z"/>
+              </svg>
+            </a>
+
+            <div class="dashboards-dropdown-menu">
+              <div class="dashboards-dropdown-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <span>Mes Dashboards</span>
+                <span class="dashboard-count">{{ user.privileges.length }}</span>
+              </div>
+
+              <div class="dashboards-list">
+                @for (privilege of user.privileges; track privilege.id) {
+                  @if (privilege.dashboard_id && privilege.dashboard_name) {
+                    <a [routerLink]="['/dashboard', privilege.dashboard_id]" class="dashboard-dropdown-item" (click)="closeDashboardsDropdown(); closeMenu()">
+                      <div class="dashboard-item-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                      </div>
+                      <div class="dashboard-item-content">
+                        <div class="dashboard-item-name">{{ privilege.dashboard_name }}</div>
+                        @if (privilege.description) {
+                          <div class="dashboard-item-desc">{{ privilege.description }}</div>
+                        }
+                      </div>
+                      <svg class="dashboard-item-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 5l7 7-7 7"/>
+                      </svg>
+                    </a>
+                  }
+                }
+              </div>
+            </div>
+          </li>
+        } @else {
+          <!-- Single Dashboard Link if no privileges -->
+          <li>
+            <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              {{ translate.translate('nav.dashboard') }}
+            </a>
+          </li>
+        }
+      }
+    </ul>
+
+    <div class="navbar-actions">
+      @if (authService.currentUser(); as user) {
+        <!-- User Dropdown -->
+        <div class="user-dropdown" [class.open]="dropdownOpen" (mouseenter)="openDropdown()" (mouseleave)="closeDropdown()">
+          <button class="user-dropdown-trigger">
+            <div class="user-avatar-wrapper">
+              @if (hasProfileImage()) {
+                <img [src]="getProfileImage()" alt="Profile" class="user-avatar" />
+              } @else {
+                <div class="user-avatar user-avatar--initials">{{ getUserInitials() }}</div>
+              }
+              <span class="status-indicator"></span>
+            </div>
+            <div class="user-info">
+              <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+              <div class="user-role">{{ getRoleLabel(user.role) }}</div>
+            </div>
+            <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M6 9L1 4h10z"/>
+            </svg>
+          </button>
+
+          <div class="dropdown-menu">
+            <div class="dropdown-header">
+              @if (hasProfileImage()) {
+                <img [src]="getProfileImage()" alt="Profile" class="dropdown-avatar" />
+              } @else {
+                <div class="dropdown-avatar dropdown-avatar--initials">{{ getUserInitials() }}</div>
+              }
+              <div class="dropdown-user-info">
+                <div class="dropdown-user-name">{{ user.first_name }} {{ user.last_name }}</div>
+                <div class="dropdown-user-email">{{ user.email }}</div>
+              </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <a routerLink="/profile" class="dropdown-item" (click)="closeDropdown()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 8a3 3 0 100-6 3 3 0 000 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              {{ translate.translate('nav.profile') }}
+            </a>
+
+            @if (authService.currentUser()?.is_admin) {
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-section-title">Administration</div>
+
+              <a routerLink="/admin/users" class="dropdown-item" (click)="closeDropdown()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                {{ translate.translate('nav.users') }}
+              </a>
+
+              <a routerLink="/admin/roles" class="dropdown-item" (click)="closeDropdown()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                Rôles &amp; Privilèges
+              </a>
+
+              <a routerLink="/admin/powerbi" class="dropdown-item" (click)="closeDropdown()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                </svg>
+                {{ translate.translate('nav.powerbi') }}
+              </a>
+            }
+
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-section-title">{{ translate.translate('nav.language') }}</div>
+
+            <button class="dropdown-item language-item" (click)="changeLanguage('fr')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="language-icon">
+                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.973 11h3.965a8.008 8.008 0 0 0-5.648-6.667z"/>
+              </svg>
+              Français
+              @if (translate.currentLanguage() === 'fr') {
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/>
+                </svg>
+              }
+            </button>
+
+            <button class="dropdown-item language-item" (click)="changeLanguage('en')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="language-icon">
+                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.973 11h3.965a8.008 8.008 0 0 0-5.648-6.667z"/>
+              </svg>
+              English
+              @if (translate.currentLanguage() === 'en') {
+                <svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/>
+                </svg>
+              }
+            </button>
+
+            <div class="dropdown-divider"></div>
+
+            <button class="dropdown-item logout-item" (click)="logout()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M10 3.5a.5.5 0 00-.5-.5h-8a.5.5 0 00-.5.5v9a.5.5 0 00.5.5h8a.5.5 0 00.5-.5v-2a.5.5 0 011 0v2A1.5 1.5 0 019.5 14h-8A1.5 1.5 0 010 12.5v-9A1.5 1.5 0 011.5 2h8A1.5 1.5 0 0111 3.5v2a.5.5 0 01-1 0v-2z"/>
+                <path d="M15.854 8.354a.5.5 0 000-.708l-3-3a.5.5 0 00-.708.708L14.293 7.5H5.5a.5.5 0 000 1h8.793l-2.147 2.146a.5.5 0 00.708.708l3-3z"/>
+              </svg>
+              {{ translate.translate('nav.logout') }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</nav>

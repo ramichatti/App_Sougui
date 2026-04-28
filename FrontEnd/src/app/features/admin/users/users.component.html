@@ -1,0 +1,353 @@
+<div class="ug-container">
+  <div class="ug-content">
+
+    <!-- ── Header ────────────────────────────────────────────────────────────── -->
+    <div class="ug-header">
+      <div class="ug-header-left">
+        <div class="ug-header-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="ug-title">Gestion des Utilisateurs</h1>
+          <p class="ug-subtitle">Gérez les comptes, rôles et accès de votre équipe</p>
+        </div>
+      </div>
+      <button class="btn-new" (click)="openModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16m8-8H4"/></svg>
+        Nouvel utilisateur
+      </button>
+    </div>
+
+    <!-- ── KPI Cards ──────────────────────────────────────────────────────────── -->
+    <div class="kpi-row">
+      <div class="kpi-card kpi--blue">
+        <div class="kpi-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ totalCount }}</div>
+          <div class="kpi-lbl">Total</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi--green">
+        <div class="kpi-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ activeCount }}</div>
+          <div class="kpi-lbl">Actifs</div>
+        </div>
+        <div class="kpi-pill kpi-pill--green">En ligne</div>
+      </div>
+      <div class="kpi-card kpi--purple">
+        <div class="kpi-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ adminCount }}</div>
+          <div class="kpi-lbl">Admins</div>
+        </div>
+        <div class="kpi-pill kpi-pill--purple">Admin</div>
+      </div>
+      <div class="kpi-card kpi--red">
+        <div class="kpi-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ inactiveCount }}</div>
+          <div class="kpi-lbl">Inactifs</div>
+        </div>
+        <div class="kpi-pill kpi-pill--gray">Hors ligne</div>
+      </div>
+    </div>
+
+    <!-- ── Toolbar ────────────────────────────────────────────────────────────── -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" type="text" [(ngModel)]="searchTerm" placeholder="Rechercher un utilisateur…"/>
+        @if (searchTerm) {
+          <button class="search-clear" (click)="clearSearch()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        }
+      </div>
+
+      <div class="filter-pills">
+        <button class="fpill" [class.fpill--active]="selectedRoleFilter === 'all'" (click)="setFilter('all')">
+          Tous <span class="fpill-count">{{ totalCount }}</span>
+        </button>
+        @for (r of roles(); track r.id) {
+          <button class="fpill" [class.fpill--active]="selectedRoleFilter === r.name" (click)="setFilter(r.name)">
+            {{ r.name }}
+          </button>
+        }
+      </div>
+
+      <div class="view-toggle">
+        <button class="vtoggle" [class.vtoggle--active]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Vue grille">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 3H3v7h7V3zM21 3h-7v7h7V3zM21 14h-7v7h7v-7zM10 14H3v7h7v-7z"/></svg>
+        </button>
+        <button class="vtoggle" [class.vtoggle--active]="viewMode === 'list'" (click)="setViewMode('list')" title="Vue liste">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Loading ────────────────────────────────────────────────────────────── -->
+    @if (isLoading()) {
+      <div class="loading-area">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    }
+
+    <!-- ══ GRID VIEW ══════════════════════════════════════════════════════════ -->
+    @if (!isLoading() && viewMode === 'grid') {
+      <div class="users-grid">
+        @for (user of getFilteredUsers(); track user.id) {
+          <div class="user-card" [class.user-card--inactive]="!user.is_active">
+            <div class="user-card__accent" [class.user-card__accent--active]="user.is_active"></div>
+
+            <div class="user-card__head">
+              <div class="avatar" [class.avatar--admin]="user.is_admin">
+                @if (hasUserImage(user)) {
+                  <img [src]="getUserImage(user)" [alt]="user.first_name" class="avatar-img"/>
+                } @else {
+                  {{ getUserInitials(user) }}
+                }
+              </div>
+              <div class="user-card__status" [class.user-card__status--active]="user.is_active">
+                <span class="status-dot"></span>
+                {{ user.is_active ? 'Actif' : 'Inactif' }}
+              </div>
+            </div>
+
+            <div class="user-card__body">
+              <h3 class="user-card__name">{{ user.first_name }} {{ user.last_name }}</h3>
+              <p class="user-card__email">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                {{ user.email }}
+              </p>
+              <span class="role-tag" [class.role-tag--admin]="user.is_admin">
+                @if (user.is_admin) {
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                }
+                {{ user.role || 'Aucun rôle' }}
+              </span>
+            </div>
+
+            <div class="user-card__actions">
+              <button class="act-btn act-btn--edit" (click)="openModal(user)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Modifier
+              </button>
+              <button class="act-btn act-btn--delete" (click)="deleteUser(user)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                Supprimer
+              </button>
+            </div>
+          </div>
+        }
+        @if (getFilteredUsers().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            @if (searchTerm) {
+              <h3>Aucun résultat pour « {{ searchTerm }} »</h3>
+              <button class="btn-reset" (click)="clearSearch()">Effacer la recherche</button>
+            } @else {
+              <h3>Aucun utilisateur</h3>
+              <p>Créez votre premier utilisateur</p>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ══ LIST VIEW ══════════════════════════════════════════════════════════ -->
+    @if (!isLoading() && viewMode === 'list') {
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of getFilteredUsers(); track user.id) {
+              <tr class="data-row">
+                <td>
+                  <div class="cell-user">
+                    <div class="avatar avatar--sm" [class.avatar--admin]="user.is_admin">
+                      @if (hasUserImage(user)) {
+                        <img [src]="getUserImage(user)" [alt]="user.first_name" class="avatar-img"/>
+                      } @else {
+                        {{ getUserInitials(user) }}
+                      }
+                    </div>
+                    <div>
+                      <span class="cell-name">{{ user.first_name }} {{ user.last_name }}</span>
+                      <span class="cell-id">ID {{ user.id }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="cell-muted">{{ user.email }}</td>
+                <td>
+                  <span class="role-tag" [class.role-tag--admin]="user.is_admin">
+                    {{ user.role || '—' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge" [class.status-badge--active]="user.is_active">
+                    <span class="status-dot"></span>
+                    {{ user.is_active ? 'Actif' : 'Inactif' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="td-actions">
+                    <button class="icon-btn icon-btn--edit" (click)="openModal(user)" title="Modifier">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="icon-btn icon-btn--del" (click)="deleteUser(user)" title="Supprimer">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (getFilteredUsers().length === 0) {
+              <tr><td colspan="5" class="td-empty">Aucun utilisateur trouvé.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- ══ MODAL ══════════════════════════════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-head">
+        <div class="modal-icon" [class.modal-icon--edit]="!!editingUser()">
+          @if (editingUser()) {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16m8-8H4"/></svg>
+          }
+        </div>
+        <div>
+          <h2 class="modal-head-title">{{ editingUser() ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}</h2>
+          <p class="modal-head-sub">{{ editingUser() ? editingUser()!.first_name + ' ' + editingUser()!.last_name : 'Remplissez les informations ci-dessous' }}</p>
+        </div>
+        <button class="modal-x" (click)="closeModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form (ngSubmit)="saveUser()" class="modal-body">
+
+        <!-- Photo -->
+        <div class="photo-field">
+          <div class="photo-preview" (click)="fileInput.click()">
+            @if (hasPreviewImage()) {
+              <img [src]="getPreviewImage()" alt="Photo" class="photo-preview-img"/>
+            } @else {
+              <div class="photo-initials">{{ getPreviewInitials() }}</div>
+            }
+            <div class="photo-overlay">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+          </div>
+          <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display:none"/>
+          <div class="photo-info">
+            <p class="photo-label">Photo de profil</p>
+            <p class="photo-hint">JPG, PNG, GIF ou WebP · Max 5 MB</p>
+            <button type="button" class="btn-pick-photo" (click)="fileInput.click()">Choisir une photo</button>
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div class="form-row">
+          <div class="mfield">
+            <label>Prénom <span class="req">*</span></label>
+            <input class="minput" type="text" [(ngModel)]="userForm.first_name" name="first_name" required placeholder="Prénom"/>
+          </div>
+          <div class="mfield">
+            <label>Nom <span class="req">*</span></label>
+            <input class="minput" type="text" [(ngModel)]="userForm.last_name" name="last_name" required placeholder="Nom"/>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="mfield">
+          <label>Email <span class="req">*</span></label>
+          <input class="minput" type="email" [(ngModel)]="userForm.email" name="email" required placeholder="exemple@domaine.com"/>
+        </div>
+
+        <!-- Password -->
+        <div class="mfield">
+          <label>
+            Mot de passe
+            @if (!editingUser()) { <span class="req">*</span> }
+            @if (editingUser()) { <span class="opt">(laisser vide pour ne pas changer)</span> }
+          </label>
+          <input class="minput" type="password" [(ngModel)]="userForm.password" name="password"
+            [required]="!editingUser()" minlength="6" placeholder="••••••••"/>
+          <small class="mhint">Au moins 6 caractères, 1 majuscule, 1 chiffre</small>
+        </div>
+
+        <!-- Role -->
+        <div class="mfield">
+          <label>Rôle <span class="req">*</span></label>
+          <select class="minput" [(ngModel)]="userForm.role_id" name="role_id" required>
+            <option [ngValue]="null">— Sélectionner un rôle —</option>
+            @for (r of roles(); track r.id) {
+              <option [ngValue]="r.id">{{ r.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Active toggle -->
+        <label class="toggle-row">
+          <div class="toggle-wrap">
+            <input type="checkbox" [(ngModel)]="userForm.is_active" name="is_active" class="toggle-input"/>
+            <span class="toggle-slider"></span>
+          </div>
+          <div class="toggle-text">
+            <span class="toggle-label">Compte actif</span>
+            <span class="toggle-desc">{{ userForm.is_active ? 'L\'utilisateur peut se connecter' : 'Accès bloqué' }}</span>
+          </div>
+        </label>
+
+        <div class="modal-foot">
+          <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="btn-submit" [disabled]="isSaving()">
+            @if (isSaving()) {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="spin"><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              Enregistrement…
+            } @else {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+              {{ editingUser() ? 'Enregistrer' : 'Créer l\'utilisateur' }}
+            }
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+}

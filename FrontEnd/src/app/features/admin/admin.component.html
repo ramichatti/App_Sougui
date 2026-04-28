@@ -1,0 +1,270 @@
+<div class="admin-container">
+  <header class="admin-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1>Administration Sougui</h1>
+        <p>Gestion des utilisateurs et dashboards</p>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-secondary" (click)="goToDashboard()">
+          Mon Dashboard
+        </button>
+        <button class="btn-logout" (click)="logout()">
+          Déconnexion
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-content">
+    <div class="admin-tabs">
+      <button
+        class="tab-button"
+        [class.active]="activeTab() === 'users'"
+        (click)="activeTab.set('users')"
+      >
+        👥 Utilisateurs
+      </button>
+      <button
+        class="tab-button"
+        [class.active]="activeTab() === 'dashboards'"
+        (click)="activeTab.set('dashboards')"
+      >
+        📊 Dashboards
+      </button>
+    </div>
+
+    <!-- Users Tab -->
+    @if (activeTab() === 'users') {
+      <div class="section-header">
+        <h2 class="section-title">Gestion des Utilisateurs</h2>
+        <button class="btn btn-primary" (click)="openUserModal()">
+          + Nouvel Utilisateur
+        </button>
+      </div>
+
+      <div class="data-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.id) {
+              <tr>
+                <td>{{ user.first_name }} {{ user.last_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <span class="badge"
+                    [class.badge-admin]="user.role === 'admin'"
+                    [class.badge-vente]="user.role === 'directeur_vente'"
+                    [class.badge-achat]="user.role === 'directeur_achat'"
+                  >
+                    {{ getRoleLabel(user.role) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge"
+                    [class.badge-active]="user.is_active"
+                    [class.badge-inactive]="!user.is_active"
+                  >
+                    {{ user.is_active ? 'Actif' : 'Inactif' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <button class="btn-icon btn-edit" (click)="openUserModal(user)">
+                      ✏️ Modifier
+                    </button>
+                    <button class="btn-icon btn-delete" (click)="deleteUser(user.id)">
+                      🗑️ Supprimer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Dashboards Tab -->
+    @if (activeTab() === 'dashboards') {
+      <div class="section-header">
+        <h2 class="section-title">Gestion des Dashboards</h2>
+        <button class="btn btn-primary" (click)="openDashboardModal()">
+          + Nouveau Dashboard
+        </button>
+      </div>
+
+      <div class="data-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Rôle</th>
+              <th>Description</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (dashboard of dashboards(); track dashboard.id) {
+              <tr>
+                <td>{{ dashboard.dashboard_name }}</td>
+                <td>
+                  <span class="badge"
+                    [class.badge-admin]="dashboard.role === 'admin'"
+                    [class.badge-vente]="dashboard.role === 'directeur_vente'"
+                    [class.badge-achat]="dashboard.role === 'directeur_achat'"
+                  >
+                    {{ getRoleLabel(dashboard.role) }}
+                  </span>
+                </td>
+                <td>{{ dashboard.description || '-' }}</td>
+                <td>
+                  <span class="badge"
+                    [class.badge-active]="dashboard.is_active"
+                    [class.badge-inactive]="!dashboard.is_active"
+                  >
+                    {{ dashboard.is_active ? 'Actif' : 'Inactif' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <button class="btn-icon btn-edit" (click)="openDashboardModal(dashboard)">
+                      ✏️ Modifier
+                    </button>
+                    <button class="btn-icon btn-delete" (click)="deleteDashboard(dashboard.id)">
+                      🗑️ Supprimer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- User Modal -->
+@if (showUserModal()) {
+  <div class="modal-overlay" (click)="closeUserModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          {{ editingUser() ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}
+        </h2>
+      </div>
+
+      <form (ngSubmit)="saveUser()">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" class="form-control" [(ngModel)]="userForm.first_name" name="first_name" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-control" [(ngModel)]="userForm.last_name" name="last_name" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" [(ngModel)]="userForm.email" name="email" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mot de passe {{ editingUser() ? '(laisser vide pour ne pas changer)' : '' }}</label>
+          <input type="password" class="form-control" [(ngModel)]="userForm.password" name="password" [required]="!editingUser()" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rôle</label>
+          <select class="form-control" [(ngModel)]="userForm.role" name="role" required>
+            <option value="admin">Administrateur</option>
+            <option value="directeur_vente">Directeur Vente</option>
+            <option value="directeur_achat">Directeur Achat</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="userForm.is_active" name="is_active" />
+            Compte actif
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">
+            {{ editingUser() ? 'Mettre à jour' : 'Créer' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeUserModal()">
+            Annuler
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Dashboard Modal -->
+@if (showDashboardModal()) {
+  <div class="modal-overlay" (click)="closeDashboardModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          {{ editingDashboard() ? 'Modifier le dashboard' : 'Nouveau dashboard' }}
+        </h2>
+      </div>
+
+      <form (ngSubmit)="saveDashboard()">
+        <div class="form-group">
+          <label class="form-label">Nom du Dashboard</label>
+          <input type="text" class="form-control" [(ngModel)]="dashboardForm.dashboard_name" name="dashboard_name" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rôle</label>
+          <select class="form-control" [(ngModel)]="dashboardForm.role" name="role" required>
+            <option value="admin">Administrateur</option>
+            <option value="directeur_vente">Directeur Vente</option>
+            <option value="directeur_achat">Directeur Achat</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">URL Power BI (iframe)</label>
+          <input type="url" class="form-control" [(ngModel)]="dashboardForm.embed_url" name="embed_url" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" [(ngModel)]="dashboardForm.description" name="description" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="dashboardForm.is_active" name="is_active" />
+            Dashboard actif
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">
+            {{ editingDashboard() ? 'Mettre à jour' : 'Créer' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeDashboardModal()">
+            Annuler
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
