@@ -56,13 +56,21 @@ def create_user():
         if not all(data.get(f) for f in required):
             return jsonify({'error': 'email, password, first_name and last_name are required'}), 400
 
-        if not data.get('role_id'):
-            return jsonify({'error': 'role_id is required'}), 400
+        # If no role_id provided, assign default role (first non-system role)
+        role_id = data.get('role_id')
+        if not role_id:
+            default_role = Role.query.filter_by(is_system=False, is_active=True).first()
+            if not default_role:
+                # Fallback to any active role
+                default_role = Role.query.filter_by(is_active=True).first()
+            if not default_role:
+                return jsonify({'error': 'No active role available. Please create a role first.'}), 400
+            role_id = default_role.id
 
         if User.query.filter_by(email=data['email']).first():
             return jsonify({'error': 'User with this email already exists'}), 400
 
-        role = Role.query.get(data['role_id'])
+        role = Role.query.get(role_id)
         if not role:
             return jsonify({'error': 'Role not found'}), 404
 
@@ -77,7 +85,7 @@ def create_user():
             email=data['email'],
             first_name=data['first_name'],
             last_name=data['last_name'],
-            role_id=data['role_id'],
+            role_id=role_id,
             is_active=data.get('is_active', True),
             profile_image=profile_image
         )

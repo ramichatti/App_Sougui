@@ -356,6 +356,52 @@
   box-shadow: 0 0 0 3px rgba(59,130,246,.12);
 }
 
+.field-input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.email-field-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.email-field-wrapper .field-input {
+  flex: 1;
+}
+
+.btn-change-email {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(5,150,105,.28);
+  transition: all .2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-change-email:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(5,150,105,.4);
+}
+
+.btn-change-email:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .code-input {
   text-align: center;
   font-size: 26px;

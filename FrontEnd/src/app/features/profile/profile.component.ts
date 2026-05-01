@@ -31,6 +31,13 @@ export class ProfileComponent implements OnInit {
   codeVerified = signal<boolean>(false);
   verificationCode: string = '';
 
+  // Email change states
+  showEmailChangeForm = signal<boolean>(false);
+  emailChangeCodeSent = signal<boolean>(false);
+  emailVerificationCode: string = '';
+  newEmail: string = '';
+  originalEmail: string = '';
+
   message = signal<string>('');
   errorMessage = signal<string>('');
   isLoading = signal<boolean>(false);
@@ -53,6 +60,7 @@ export class ProfileComponent implements OnInit {
         last_name: user.last_name,
         email: user.email
       };
+      this.originalEmail = user.email;
       
       if (user.profile_image) {
         this.imagePreview = 'data:image/jpeg;base64,' + user.profile_image;
@@ -171,15 +179,9 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    // Validate email
-    if (!this.profileForm.email || !this.profileForm.email.trim()) {
-      this.errorMessage.set('L\'email est requis');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.profileForm.email)) {
-      this.errorMessage.set('Format d\'email invalide');
+    // Check if email has changed
+    if (this.profileForm.email !== this.originalEmail) {
+      this.errorMessage.set('Pour changer votre email, utilisez le bouton "Changer l\'email"');
       return;
     }
 
@@ -187,7 +189,13 @@ export class ProfileComponent implements OnInit {
     this.errorMessage.set('');
     this.message.set('');
 
-    this.profileService.updateProfile(this.profileForm).subscribe({
+    // Only send first_name and last_name
+    const updateData = {
+      first_name: this.profileForm.first_name,
+      last_name: this.profileForm.last_name
+    };
+
+    this.profileService.updateProfile(updateData).subscribe({
       next: (response) => {
         this.isLoading.set(false);
         this.message.set('Profil mis à jour avec succès');
@@ -197,7 +205,6 @@ export class ProfileComponent implements OnInit {
         if (user) {
           user.first_name = this.profileForm.first_name;
           user.last_name = this.profileForm.last_name;
-          user.email = this.profileForm.email;
           localStorage.setItem('user', JSON.stringify(user));
           this.authService.currentUser.set({...user}); // Create new reference to trigger change detection
         }
@@ -207,6 +214,100 @@ export class ProfileComponent implements OnInit {
         this.errorMessage.set(error.error?.error || error.error?.message || 'Erreur lors de la mise à jour');
       }
     });
+  }
+
+  requestEmailChange(): void {
+    this.showEmailChangeForm.set(true);
+    this.errorMessage.set('');
+    this.message.set('');
+  }
+
+  sendEmailChangeCode(): void {
+    // Validate new email
+    if (!this.newEmail || !this.newEmail.trim()) {
+      this.errorMessage.set('Le nouvel email est requis');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.newEmail)) {
+      this.errorMessage.set('Format d\'email invalide');
+      return;
+    }
+
+    if (this.newEmail === this.originalEmail) {
+      this.errorMessage.set('Le nouvel email est identique à l\'email actuel');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.message.set('');
+
+    this.profileService.requestEmailChange(this.newEmail).subscribe({
+      next: (response) => {
+        this.isLoading.set(false);
+        this.emailChangeCodeSent.set(true);
+        this.message.set('Code de vérification envoyé à votre email actuel');
+        
+        // For development - show code in console
+        if (response.debug_code) {
+          console.log('Email change verification code:', response.debug_code);
+        }
+      },
+      error: (error) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(error.error?.error || error.error?.message || 'Erreur lors de l\'envoi du code');
+      }
+    });
+  }
+
+  verifyEmailChange(): void {
+    if (!this.emailVerificationCode || this.emailVerificationCode.length !== 6) {
+      this.errorMessage.set('Veuillez entrer un code à 6 chiffres');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.message.set('');
+
+    this.profileService.verifyEmailChangeCode(this.emailVerificationCode).subscribe({
+      next: (response) => {
+        this.isLoading.set(false);
+        this.message.set('Email changé avec succès! Un email de confirmation a été envoyé.');
+        
+        // Update local user data with new email
+        const user = this.authService.currentUser();
+        if (user && response.user) {
+          user.email = response.user.email;
+          localStorage.setItem('user', JSON.stringify(user));
+          this.authService.currentUser.set({...user});
+        }
+        
+        // Reset form
+        this.showEmailChangeForm.set(false);
+        this.emailChangeCodeSent.set(false);
+        this.emailVerificationCode = '';
+        this.newEmail = '';
+        this.originalEmail = response.user.email;
+        this.profileForm.email = response.user.email;
+      },
+      error: (error) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(error.error?.error || error.error?.message || 'Code invalide ou expiré');
+      }
+    });
+  }
+
+  cancelEmailChange(): void {
+    this.showEmailChangeForm.set(false);
+    this.emailChangeCodeSent.set(false);
+    this.emailVerificationCode = '';
+    this.newEmail = '';
+    this.profileForm.email = this.originalEmail;
+    this.errorMessage.set('');
+    this.message.set('');
   }
 
   requestPasswordChange(): void {

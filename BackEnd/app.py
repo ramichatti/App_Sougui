@@ -50,7 +50,8 @@ def create_app():
     from routes.profile import profile_bp
     from routes.powerbi import powerbi_bp
     from routes.roles import roles_bp
-    from routes.reclamation import reclamation_bp
+    from routes.notifications import notifications_bp
+    from routes.ml_models import ml_models_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -58,7 +59,8 @@ def create_app():
     app.register_blueprint(profile_bp)
     app.register_blueprint(powerbi_bp)
     app.register_blueprint(roles_bp)
-    app.register_blueprint(reclamation_bp)
+    app.register_blueprint(notifications_bp)
+    app.register_blueprint(ml_models_bp)
     
     # Health check
     @app.route('/api/health', methods=['GET'])

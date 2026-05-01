@@ -20,13 +20,13 @@ def login():
         user = User.query.filter_by(email=data['email']).first()
         
         if not user:
-            return jsonify({'error': 'Invalid email or password'}), 401
-        
-        if not user.check_password(data['password']):
-            return jsonify({'error': 'Invalid email or password'}), 401
-        
+            return jsonify({'error': 'Aucun compte associé à cet email'}), 401
+
         if not user.is_active:
-            return jsonify({'error': 'Account is deactivated'}), 401
+            return jsonify({'error': 'Votre compte a été bloqué par l\'administrateur. Contactez le support.'}), 403
+
+        if not user.check_password(data['password']):
+            return jsonify({'error': 'Mot de passe incorrect'}), 401
         
         access_token = create_access_token(identity=str(user.id))
 
@@ -158,6 +158,30 @@ def reset_password():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Failed to reset password', 'details': str(e)}), 500
+
+@auth_bp.route('/verify-password', methods=['POST'])
+@jwt_required()
+def verify_password():
+    """Verify the current user's password (used for admin section security re-check)."""
+    try:
+        current_user_id = int(get_jwt_identity())
+        user = User.query.get(current_user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        data = request.get_json()
+        password = (data or {}).get('password', '')
+        if not password:
+            return jsonify({'error': 'Password is required'}), 400
+
+        if user.check_password(password):
+            return jsonify({'valid': True}), 200
+
+        return jsonify({'valid': False, 'error': 'Mot de passe incorrect'}), 401
+
+    except Exception as e:
+        return jsonify({'error': 'Verification failed', 'details': str(e)}), 500
+
 
 @auth_bp.route('/me', methods=['GET'])
 @jwt_required()

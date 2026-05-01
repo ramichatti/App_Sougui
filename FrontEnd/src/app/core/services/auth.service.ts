@@ -77,4 +77,15 @@ export class AuthService {
   isAdmin(): boolean {
     return this.currentUser()?.is_admin === true;
   }
+
+  refreshUser(): void {
+    this.http.get<{ user: User }>(`${this.apiUrl}/auth/me`).subscribe({
+      next: (response) => {
+        const user = response.user;
+        this.currentUser.set(user);
+        localStorage.setItem('user', JSON.stringify(user));
+      },
+      error: () => {}
+    });
+  }
 }

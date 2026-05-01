@@ -85,7 +85,7 @@ export class AdminComponent implements OnInit {
         password: '',
         first_name: user.first_name,
         last_name: user.last_name,
-        role: user.role,
+        role: (user.role || 'directeur_vente') as 'admin' | 'directeur_vente' | 'directeur_achat',
         is_active: user.is_active
       };
     } else {

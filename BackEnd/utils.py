@@ -149,6 +149,92 @@ L'équipe Sougui'''
         print(f"Error sending email: {str(e)}")
         return False
 
+def send_privilege_notification_email(mail, user_email, user_name, privilege_name, dashboard_name, role_name):
+    """Notify a user that a new privilege (dashboard access) was granted to their role."""
+    try:
+        html_body = f'''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }}
+                .container {{ max-width: 600px; margin: 40px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }}
+                .header {{ background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; }}
+                .header h1 {{ margin: 0; font-size: 28px; }}
+                .content {{ padding: 40px 30px; }}
+                .info-box {{ background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #3b82f6; border-radius: 10px; padding: 20px; margin: 24px 0; }}
+                .info-box h2 {{ color: #1e3a8a; margin: 0 0 12px 0; font-size: 18px; }}
+                .info-row {{ display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #bfdbfe; font-size: 14px; }}
+                .info-row:last-child {{ border-bottom: none; }}
+                .info-label {{ color: #64748b; font-weight: 600; }}
+                .info-value {{ color: #1e3a8a; font-weight: 700; }}
+                .footer {{ background: #f9fafb; padding: 20px 30px; text-align: center; color: #6b7280; font-size: 14px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Sougui</h1>
+                    <p>Nouveau privilège accordé</p>
+                </div>
+                <div class="content">
+                    <p>Bonjour {user_name},</p>
+                    <p>Un nouveau privilège d'accès a été accordé à votre rôle sur la plateforme Sougui.</p>
+                    <div class="info-box">
+                        <h2>Détails du privilège</h2>
+                        <div class="info-row">
+                            <span class="info-label">Privilège :</span>
+                            <span class="info-value">{privilege_name}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Dashboard :</span>
+                            <span class="info-value">{dashboard_name}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Rôle :</span>
+                            <span class="info-value">{role_name}</span>
+                        </div>
+                    </div>
+                    <p>Vous pouvez désormais accéder à ce dashboard depuis votre espace Sougui.</p>
+                    <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                        Si vous pensez avoir reçu cet email par erreur, contactez votre administrateur.
+                    </p>
+                </div>
+                <div class="footer">
+                    <p><strong>Sougui - Produits Artisanaux Tunisiens</strong></p>
+                    <p>© 2024 Sougui. Tous droits réservés.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        '''
+        text_body = f'''Bonjour {user_name},
+
+Un nouveau privilège a été accordé à votre rôle.
+
+Privilège : {privilege_name}
+Dashboard : {dashboard_name}
+Rôle : {role_name}
+
+Connectez-vous à Sougui pour y accéder.
+
+Cordialement,
+L\'équipe Sougui'''
+
+        msg = Message(
+            subject='Nouveau privilège accordé - Sougui',
+            sender=('Sougui Platform', current_app.config['MAIL_USERNAME']),
+            recipients=[user_email],
+            body=text_body,
+            html=html_body
+        )
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Error sending privilege notification email: {str(e)}")
+        return False
+
+
 def is_code_expired(expiration_time):
     """Check if reset code is expired"""
     if not expiration_time:

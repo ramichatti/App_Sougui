@@ -1,37 +1,48 @@
-import { Component, OnInit, signal } from '@angular/core';
+﻿import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PowerBIService, PowerBIDashboard } from '../../../core/services/powerbi.service';
-import { TranslationService } from '../../../core/services/translation.service';
-import { NotificationService } from '../../../core/services/notification.service';
+import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
+import { DashboardService } from '../../../core/services/dashboard.service';
+import { Dashboard } from '../../../core/models/dashboard.model';
+
+interface DashboardForm {
+  dashboard_name: string;
+  embed_url: string;
+  description: string;
+  is_active: boolean;
+}
 
 @Component({
   selector: 'app-powerbi-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NavbarComponent],
   templateUrl: './powerbi-management.component.html',
   styleUrls: ['./powerbi-management.component.css']
 })
 export class PowerBIManagementComponent implements OnInit {
-  dashboards = signal<PowerBIDashboard[]>([]);
+  dashboards = signal<Dashboard[]>([]);
+  isLoading = signal<boolean>(true);
   showModal = signal<boolean>(false);
-  editingDashboard = signal<PowerBIDashboard | null>(null);
-  isLoading = signal<boolean>(false);
-  selectedFilter = signal<string>('all');
+  editingDashboard = signal<Dashboard | null>(null);
+  selectedFilter = signal<'all' | 'active' | 'inactive'>('all');
   dashboardSearch = '';
 
-  dashboardForm = {
+  dashboardForm: DashboardForm = {
     dashboard_name: '',
     embed_url: '',
     description: '',
     is_active: true
   };
 
-  constructor(
-    private powerbiService: PowerBIService,
-    public translationService: TranslationService,
-    private notificationService: NotificationService
-  ) {}
+  activeDashboardCount = computed(() => 
+    this.dashboards().filter(d => d.is_active).length
+  );
+
+  inactiveDashboardCount = computed(() => 
+    this.dashboards().filter(d => !d.is_active).length
+  );
+
+  constructor(private dashboardService: DashboardService) {}
 
   ngOnInit(): void {
     this.loadDashboards();
@@ -39,19 +50,44 @@ export class PowerBIManagementComponent implements OnInit {
 
   loadDashboards(): void {
     this.isLoading.set(true);
-    this.powerbiService.getAllDashboards().subscribe({
+    this.dashboardService.getAllDashboards().subscribe({
       next: (response) => {
-        this.dashboards.set(response.dashboards);
+        this.dashboards.set(response.dashboards || []);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error loading dashboards:', error);
         this.isLoading.set(false);
-        this.notificationService.error('Failed to load dashboards');
       }
     });
   }
 
-  openModal(dashboard?: PowerBIDashboard): void {
+  getFilteredDashboards(): Dashboard[] {
+    let filtered = this.dashboards();
+
+    if (this.selectedFilter() === 'active') {
+      filtered = filtered.filter(d => d.is_active);
+    } else if (this.selectedFilter() === 'inactive') {
+      filtered = filtered.filter(d => !d.is_active);
+    }
+
+    if (this.dashboardSearch.trim()) {
+      const search = this.dashboardSearch.toLowerCase();
+      filtered = filtered.filter(d => 
+        d.dashboard_name.toLowerCase().includes(search) ||
+        (d.description && d.description.toLowerCase().includes(search)) ||
+        d.embed_url.toLowerCase().includes(search)
+      );
+    }
+
+    return filtered;
+  }
+
+  setFilter(filter: 'all' | 'active' | 'inactive'): void {
+    this.selectedFilter.set(filter);
+  }
+
+  openModal(dashboard?: Dashboard): void {
     if (dashboard) {
       this.editingDashboard.set(dashboard);
       this.dashboardForm = {
@@ -62,67 +98,19 @@ export class PowerBIManagementComponent implements OnInit {
       };
     } else {
       this.editingDashboard.set(null);
-      this.resetForm();
+      this.dashboardForm = {
+        dashboard_name: '',
+        embed_url: '',
+        description: '',
+        is_active: true
+      };
     }
     this.showModal.set(true);
   }
 
   closeModal(): void {
     this.showModal.set(false);
-    this.resetForm();
-  }
-
-  saveDashboard(): void {
-    const dashboard = this.editingDashboard();
-    
-    if (dashboard) {
-      this.powerbiService.updateDashboard(dashboard.id, this.dashboardForm).subscribe({
-        next: () => {
-          this.notificationService.success('Dashboard updated successfully');
-          this.closeModal();
-          this.loadDashboards();
-        },
-        error: () => {
-          this.notificationService.error('Failed to update dashboard');
-        }
-      });
-    } else {
-      this.powerbiService.createDashboard(this.dashboardForm).subscribe({
-        next: () => {
-          this.notificationService.success('Dashboard created successfully');
-          this.closeModal();
-          this.loadDashboards();
-        },
-        error: () => {
-          this.notificationService.error('Failed to create dashboard');
-        }
-      });
-    }
-  }
-
-  copyUrl(url: string): void {
-    navigator.clipboard.writeText(url).then(() => {
-      this.notificationService.success('URL copiée dans le presse-papiers');
-    }).catch(() => {
-      this.notificationService.error('Impossible de copier l\'URL');
-    });
-  }
-
-  deleteDashboard(id: number): void {
-    if (confirm('Supprimer ce dashboard ? Cette action est irréversible.')) {
-      this.powerbiService.deleteDashboard(id).subscribe({
-        next: () => {
-          this.notificationService.success('Dashboard deleted successfully');
-          this.loadDashboards();
-        },
-        error: () => {
-          this.notificationService.error('Failed to delete dashboard');
-        }
-      });
-    }
-  }
-
-  resetForm(): void {
+    this.editingDashboard.set(null);
     this.dashboardForm = {
       dashboard_name: '',
       embed_url: '',
@@ -131,28 +119,53 @@ export class PowerBIManagementComponent implements OnInit {
     };
   }
 
-  getFilteredDashboards(): PowerBIDashboard[] {
-    let list = this.dashboards();
-    const filter = this.selectedFilter();
-    if (filter === 'active') list = list.filter(d => d.is_active);
-    else if (filter === 'inactive') list = list.filter(d => !d.is_active);
-    const q = this.dashboardSearch.toLowerCase().trim();
-    if (q) list = list.filter(d =>
-      d.dashboard_name.toLowerCase().includes(q) ||
-      (d.description || '').toLowerCase().includes(q)
-    );
-    return list;
+  saveDashboard(): void {
+    const editing = this.editingDashboard();
+    
+    if (editing) {
+      this.dashboardService.updateDashboard(editing.id, this.dashboardForm).subscribe({
+        next: () => {
+          this.loadDashboards();
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('Error updating dashboard:', error);
+          alert('Erreur lors de la mise à jour du dashboard');
+        }
+      });
+    } else {
+      this.dashboardService.createDashboard(this.dashboardForm).subscribe({
+        next: () => {
+          this.loadDashboards();
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('Error creating dashboard:', error);
+          alert('Erreur lors de la création du dashboard');
+        }
+      });
+    }
   }
 
-  setFilter(filter: string): void {
-    this.selectedFilter.set(filter);
+  deleteDashboard(id: number): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce dashboard ?')) {
+      this.dashboardService.deleteDashboard(id).subscribe({
+        next: () => {
+          this.loadDashboards();
+        },
+        error: (error) => {
+          console.error('Error deleting dashboard:', error);
+          alert('Erreur lors de la suppression du dashboard');
+        }
+      });
+    }
   }
 
-  get activeDashboardCount(): number {
-    return this.dashboards().filter(d => d.is_active).length;
-  }
-
-  get inactiveDashboardCount(): number {
-    return this.dashboards().filter(d => !d.is_active).length;
+  copyUrl(url: string): void {
+    navigator.clipboard.writeText(url).then(() => {
+      console.log('URL copied to clipboard');
+    }).catch(err => {
+      console.error('Failed to copy URL:', err);
+    });
   }
 }

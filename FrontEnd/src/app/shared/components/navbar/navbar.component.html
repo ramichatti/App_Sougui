@@ -52,22 +52,42 @@
               <div class="dashboards-list">
                 @for (privilege of user.privileges; track privilege.id) {
                   @if (privilege.dashboard_id && privilege.dashboard_name) {
-                    <a [routerLink]="['/dashboard', privilege.dashboard_id]" class="dashboard-dropdown-item" (click)="closeDashboardsDropdown(); closeMenu()">
-                      <div class="dashboard-item-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    @if (privilege.dashboard_is_active === false) {
+                      <!-- Dashboard en maintenance -->
+                      <div class="dashboard-dropdown-item dashboard-dropdown-item--maintenance">
+                        <div class="dashboard-item-icon dashboard-item-icon--maintenance">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                          </svg>
+                        </div>
+                        <div class="dashboard-item-content">
+                          <div class="dashboard-item-name dashboard-item-name--maintenance">{{ privilege.dashboard_name }}</div>
+                          <div class="dashboard-item-maintenance-badge">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M13.7 2.3a9.8 9.8 0 00-3.4 0C6 2.9 3 6.2 3 10.2c0 2.6 1.2 5 3.2 6.6V20a1 1 0 001 1h9.6a1 1 0 001-1v-3.2c2-1.6 3.2-4 3.2-6.6 0-4-3-7.3-7.3-7.9z"/>
+                            </svg>
+                            En maintenance · Update soon
+                          </div>
+                        </div>
+                      </div>
+                    } @else {
+                      <a [routerLink]="['/dashboard', privilege.dashboard_id]" class="dashboard-dropdown-item" (click)="closeDashboardsDropdown(); closeMenu()">
+                        <div class="dashboard-item-icon">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                          </svg>
+                        </div>
+                        <div class="dashboard-item-content">
+                          <div class="dashboard-item-name">{{ privilege.dashboard_name }}</div>
+                          @if (privilege.description) {
+                            <div class="dashboard-item-desc">{{ privilege.description }}</div>
+                          }
+                        </div>
+                        <svg class="dashboard-item-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M9 5l7 7-7 7"/>
                         </svg>
-                      </div>
-                      <div class="dashboard-item-content">
-                        <div class="dashboard-item-name">{{ privilege.dashboard_name }}</div>
-                        @if (privilege.description) {
-                          <div class="dashboard-item-desc">{{ privilege.description }}</div>
-                        }
-                      </div>
-                      <svg class="dashboard-item-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 5l7 7-7 7"/>
-                      </svg>
-                    </a>
+                      </a>
+                    }
                   }
                 }
               </div>
@@ -85,9 +105,76 @@
           </li>
         }
       }
+
+      <!-- Models (Admin Only) -->
+      @if (authService.currentUser()?.is_admin) {
+        <li>
+          <a routerLink="/admin/models" routerLinkActive="active" (click)="closeMenu()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+            </svg>
+            Modèles
+          </a>
+        </li>
+      }
     </ul>
 
     <div class="navbar-actions">
+      @if (authService.currentUser()) {
+        <!-- Notification Bell -->
+        <div class="notif-bell-wrapper" [class.open]="notifDropdownOpen" (mouseenter)="openNotifDropdown()" (mouseleave)="closeNotifDropdown()">
+          <button class="notif-bell-btn" (click)="toggleNotifDropdown()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+            @if (unreadCount() > 0) {
+              <span class="notif-badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
+            }
+          </button>
+
+          <div class="notif-dropdown">
+            <div class="notif-dropdown-header">
+              <span>{{ translate.translate('notification.title') }}</span>
+              @if (unreadCount() > 0) {
+                <button class="notif-mark-all" (click)="markAllRead(); $event.stopPropagation()">
+                  {{ translate.translate('notification.markAllRead') }}
+                </button>
+              }
+            </div>
+
+            <div class="notif-list">
+              @if (notifications().length === 0) {
+                <div class="notif-empty">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
+                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                  </svg>
+                  <p>{{ translate.translate('notification.noNotifications') }}</p>
+                  <small>{{ translate.translate('notification.noNotificationsDesc') }}</small>
+                </div>
+              } @else {
+                @for (notif of notifications(); track notif.id) {
+                  <div class="notif-item" [class.unread]="!notif.is_read" (click)="markRead(notif)">
+                    <div class="notif-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                      </svg>
+                    </div>
+                    <div class="notif-content">
+                      <div class="notif-title">{{ notif.title }}</div>
+                      <div class="notif-message">{{ notif.message }}</div>
+                      <div class="notif-time">{{ formatNotifTime(notif.created_at) }}</div>
+                    </div>
+                    @if (!notif.is_read) {
+                      <span class="notif-dot"></span>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      }
+
       @if (authService.currentUser(); as user) {
         <!-- User Dropdown -->
         <div class="user-dropdown" [class.open]="dropdownOpen" (mouseenter)="openDropdown()" (mouseleave)="closeDropdown()">
@@ -146,14 +233,14 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
-                Rôles &amp; Privilèges
+                Rôles &amp; Accès
               </a>
 
               <a routerLink="/admin/powerbi" class="dropdown-item" (click)="closeDropdown()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                 </svg>
-                {{ translate.translate('nav.powerbi') }}
+                Dashboards Power BI
               </a>
             }
 

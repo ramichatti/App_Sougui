@@ -1,0 +1,299 @@
+<app-navbar></app-navbar>
+
+<div class="model-page">
+  <!-- Header -->
+  <div class="model-header">
+    <div class="header-content">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
+        </svg>
+        Retour
+      </button>
+      <div class="header-title">
+        <div class="model-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Best Seller Prediction</h1>
+          <p>Prédiction des ventes et identification des produits best-sellers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="model-content">
+    <div class="content-grid">
+      <!-- Input Form -->
+      <div class="input-section">
+        <div class="section-card">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
+            </svg>
+            Caractéristiques du produit
+          </h2>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Prix Moyen (DT)
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="prix_moyen" 
+                placeholder="Ex: 50.0"
+                step="0.01"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Prix moyen du produit</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                Quantité Moyenne
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="quantite_moyenne" 
+                placeholder="Ex: 2.0"
+                step="0.1"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Quantité moyenne par commande</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Nombre de Commandes
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="nombre_commandes" 
+                placeholder="Ex: 10"
+                step="1"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Nombre total de commandes</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                Taux de Réduction
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="taux_reduction" 
+                placeholder="Ex: 0.1 (10%)"
+                step="0.01"
+                min="0"
+                max="1"
+                [disabled]="isLoading()"
+              />
+              <small>Taux de réduction (0.0 à 1.0)</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Vélocité des Ventes
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="velocite_ventes" 
+                placeholder="Ex: 0.5"
+                step="0.1"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Vitesse de rotation du stock</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                </svg>
+                Catégorie de Prix
+              </label>
+              <select 
+                [(ngModel)]="categorie_prix"
+                [disabled]="isLoading()"
+              >
+                <option value="">Sélectionner...</option>
+                <option value="1">1 - Économique</option>
+                <option value="2">2 - Standard</option>
+                <option value="3">3 - Premium</option>
+              </select>
+              <small>Gamme de prix du produit</small>
+            </div>
+          </div>
+
+          @if (errorMsg()) {
+            <div class="error-msg">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <div class="form-actions">
+            <button class="btn-predict" (click)="predict()" [disabled]="isLoading() || !validateInputs()">
+              @if (isLoading()) {
+                <span class="spinner"></span>
+                Analyse en cours...
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                Prédire les ventes
+              }
+            </button>
+            <button class="btn-reset" (click)="reset()" [disabled]="isLoading()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-section">
+        @if (result()) {
+          <div class="section-card">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Résultats de prédiction
+            </h2>
+
+            <!-- Best Seller Status -->
+            <div class="status-badge" [style.background]="getStatusGradient(result()!.status_class)">
+              <div class="status-icon" [style.color]="getStatusColor(result()!.status_class)">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+              </div>
+              <div class="status-content">
+                <span class="status-label">Statut Best Seller</span>
+                <span class="status-value" [style.color]="getStatusColor(result()!.status_class)">
+                  {{ result()!.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Prediction Value -->
+            <div class="prediction-card">
+              <div class="prediction-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+                <span>Prédiction de ventes</span>
+              </div>
+              <div class="prediction-value">
+                {{ result()!.prediction }} <span class="unit">unités</span>
+              </div>
+              <div class="prediction-desc">Ventes estimées pour la période</div>
+            </div>
+
+            <!-- Score -->
+            <div class="score-section">
+              <div class="score-header">
+                <span>Score Best Seller</span>
+                <span class="score-value">{{ (result()!.score * 100).toFixed(1) }}%</span>
+              </div>
+              <div class="score-bar">
+                <div 
+                  class="score-fill" 
+                  [style.width.%]="result()!.score * 100"
+                  [style.background]="getStatusColor(result()!.status_class)"
+                ></div>
+              </div>
+              <div class="score-legend">
+                <span class="legend-item">
+                  <span class="legend-dot" style="background: #10b981;"></span>
+                  Excellent (>70%)
+                </span>
+                <span class="legend-item">
+                  <span class="legend-dot" style="background: #3b82f6;"></span>
+                  Bon (>50%)
+                </span>
+                <span class="legend-item">
+                  <span class="legend-dot" style="background: #f59e0b;"></span>
+                  Moyen (>30%)
+                </span>
+                <span class="legend-item">
+                  <span class="legend-dot" style="background: #ef4444;"></span>
+                  Faible (<30%)
+                </span>
+              </div>
+            </div>
+
+            <!-- Input Summary -->
+            <div class="summary-section">
+              <h3>Récapitulatif des données</h3>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="summary-label">Prix moyen</span>
+                  <span class="summary-value">{{ result()!.input_features.prix_moyen }} DT</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Quantité moyenne</span>
+                  <span class="summary-value">{{ result()!.input_features.quantite_moyenne }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Nombre commandes</span>
+                  <span class="summary-value">{{ result()!.input_features.nombre_commandes }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Taux réduction</span>
+                  <span class="summary-value">{{ (result()!.input_features.taux_reduction * 100).toFixed(0) }}%</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Vélocité ventes</span>
+                  <span class="summary-value">{{ result()!.input_features.velocite_ventes }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Catégorie prix</span>
+                  <span class="summary-value">{{ result()!.input_features.categorie_prix }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="section-card empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" opacity="0.2">
+              <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+            </svg>
+            <h3>Aucun résultat</h3>
+            <p>Entrez les caractéristiques du produit et cliquez sur "Prédire les ventes"</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

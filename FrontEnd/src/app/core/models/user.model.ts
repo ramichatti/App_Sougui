@@ -4,6 +4,7 @@ export interface Privilege {
   description?: string;
   dashboard_id: number | null;
   dashboard_name?: string | null;
+  dashboard_is_active?: boolean | null;
   created_at?: string;
 }
 

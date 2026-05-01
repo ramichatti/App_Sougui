@@ -17,18 +17,18 @@ export class DashboardService {
   }
 
   getAllDashboards(): Observable<{ dashboards: Dashboard[] }> {
-    return this.http.get<{ dashboards: Dashboard[] }>(`${this.apiUrl}/admin/dashboards`);
+    return this.http.get<{ dashboards: Dashboard[] }>(`${this.apiUrl}/powerbi/dashboards/all`);
   }
 
   createDashboard(dashboard: Partial<Dashboard>): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/dashboards`, dashboard);
+    return this.http.post(`${this.apiUrl}/powerbi/dashboards`, dashboard);
   }
 
   updateDashboard(id: number, dashboard: Partial<Dashboard>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/admin/dashboards/${id}`, dashboard);
+    return this.http.put(`${this.apiUrl}/powerbi/dashboards/${id}`, dashboard);
   }
 
   deleteDashboard(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/admin/dashboards/${id}`);
+    return this.http.delete(`${this.apiUrl}/powerbi/dashboards/${id}`);
   }
 }

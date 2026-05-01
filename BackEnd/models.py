@@ -68,7 +68,7 @@ class Privilege(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
-    dashboard_id = db.Column(db.Integer, db.ForeignKey('powerbi_dashboards.id', ondelete='SET NULL'), nullable=True)
+    dashboard_id = db.Column(db.Integer, db.ForeignKey('powerbi_dashboards.id', ondelete='CASCADE'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     dashboard = db.relationship('PowerBIDashboard', backref='privileges')
@@ -80,6 +80,7 @@ class Privilege(db.Model):
             'description': self.description,
             'dashboard_id': self.dashboard_id,
             'dashboard_name': self.dashboard.dashboard_name if self.dashboard else None,
+            'dashboard_is_active': self.dashboard.is_active if self.dashboard else None,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
@@ -92,7 +93,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id', ondelete='SET NULL'), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     profile_image = db.Column(db.LargeBinary, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -103,6 +104,10 @@ class User(db.Model):
 
     password_change_code = db.Column(db.String(6), nullable=True)
     password_change_code_expires = db.Column(db.DateTime, nullable=True)
+
+    email_change_code = db.Column(db.String(6), nullable=True)
+    email_change_code_expires = db.Column(db.DateTime, nullable=True)
+    pending_email = db.Column(db.String(120), nullable=True)
 
     role_rel = db.relationship('Role', backref='users')
 
@@ -149,55 +154,26 @@ class User(db.Model):
         return data
 
 
-class Reclamation(db.Model):
-    __tablename__ = 'reclamations'
+class AppNotification(db.Model):
+    __tablename__ = 'app_notifications'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    category = db.Column(db.Enum('technique', 'commercial', 'produit', 'service', 'autre'), nullable=False)
-    priority = db.Column(db.Enum('basse', 'moyenne', 'haute', 'urgente'), default='moyenne')
-    status = db.Column(db.Enum('nouvelle', 'en_cours', 'resolue', 'fermee'), default='nouvelle')
-    response = db.Column(db.Text, nullable=True)
-    attachment = db.Column(db.LargeBinary, nullable=True)
-    attachment_name = db.Column(db.String(255), nullable=True)
-    attachment_type = db.Column(db.String(100), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    type = db.Column(db.String(50), default='privilege')
+    is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    resolved_at = db.Column(db.DateTime, nullable=True)
-    admin_notified = db.Column(db.Boolean, default=False)
 
-    user = db.relationship('User', backref='reclamations')
+    user = db.relationship('User', backref='notifications')
 
     def to_dict(self):
-        import base64
-        user_image = None
-        if self.user.profile_image:
-            user_image = base64.b64encode(self.user.profile_image).decode('utf-8')
-
-        attachment_data = None
-        if self.attachment:
-            attachment_data = base64.b64encode(self.attachment).decode('utf-8')
-
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'user_name': f"{self.user.first_name} {self.user.last_name}",
-            'user_email': self.user.email,
-            'user_image': user_image,
             'title': self.title,
-            'description': self.description,
-            'category': self.category,
-            'priority': self.priority,
-            'status': self.status,
-            'response': self.response,
-            'has_attachment': self.attachment is not None,
-            'attachment_name': self.attachment_name,
-            'attachment_type': self.attachment_type,
-            'attachment_data': attachment_data,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
-            'admin_notified': self.admin_notified
+            'message': self.message,
+            'type': self.type,
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }

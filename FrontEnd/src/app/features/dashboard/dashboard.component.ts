@@ -20,6 +20,7 @@ export class DashboardComponent implements OnInit {
   errorMessage = signal<string>('');
   currentDashboardIndex = signal<number>(0);
   specificDashboardId = signal<number | null>(null);
+  showIframe = signal<boolean>(true);
 
   constructor(
     public authService: AuthService,
@@ -31,7 +32,6 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Check if a specific dashboard ID is provided in the route
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.specificDashboardId.set(+params['id']);
@@ -42,11 +42,11 @@ export class DashboardComponent implements OnInit {
 
   loadDashboards(): void {
     this.isLoading.set(true);
+    this.errorMessage.set('');
     this.dashboardService.getMyDashboards().subscribe({
       next: (response) => {
         this.dashboards.set(response.dashboards);
-        
-        // If a specific dashboard ID is provided, find and display it
+
         const specificId = this.specificDashboardId();
         if (specificId) {
           const index = response.dashboards.findIndex(d => d.id === specificId);
@@ -54,52 +54,33 @@ export class DashboardComponent implements OnInit {
             this.currentDashboardIndex.set(index);
           }
         }
-        
+
+        this.showIframe.set(true);
         this.isLoading.set(false);
       },
-      error: (error) => {
+      error: () => {
         this.errorMessage.set(this.translationService.translate('dashboard.error'));
         this.isLoading.set(false);
       }
     });
   }
 
+  // Only called by the refresh button — never automatically
+  refreshDashboard(): void {
+    this.showIframe.set(false);
+    setTimeout(() => this.showIframe.set(true), 80);
+  }
+
   getSafeUrl(url: string): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-  logout(): void {
-    this.authService.logout();
-  }
-
-  goToAdmin(): void {
-    this.router.navigate(['/admin']);
-  }
-
-  getRoleLabel(role: string): string {
-    return this.translationService.translate(`role.${role}`);
-  }
-
-  selectDashboard(index: number): void {
-    this.currentDashboardIndex.set(index);
-  }
-
   getCurrentDashboard(): Dashboard | null {
-    const dashboards = this.dashboards();
-    const index = this.currentDashboardIndex();
-    return dashboards.length > 0 && index < dashboards.length ? dashboards[index] : null;
+    const list = this.dashboards();
+    const i = this.currentDashboardIndex();
+    return list.length > 0 && i < list.length ? list[i] : null;
   }
 
-  nextDashboard(): void {
-    const dashboards = this.dashboards();
-    if (this.currentDashboardIndex() < dashboards.length - 1) {
-      this.currentDashboardIndex.set(this.currentDashboardIndex() + 1);
-    }
-  }
-
-  previousDashboard(): void {
-    if (this.currentDashboardIndex() > 0) {
-      this.currentDashboardIndex.set(this.currentDashboardIndex() - 1);
-    }
-  }
+  logout(): void { this.authService.logout(); }
+  goToAdmin(): void { this.router.navigate(['/admin']); }
 }

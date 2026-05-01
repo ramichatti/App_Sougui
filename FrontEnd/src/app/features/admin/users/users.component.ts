@@ -259,12 +259,15 @@ export class UsersComponent implements OnInit {
   }
 
   private resetForm(): void {
+    // Find default role (first non-admin role, or first role if all are admin)
+    const defaultRole = this.roles().find(r => !r.is_admin) || this.roles()[0];
+    
     this.userForm = {
       email: '',
       password: '',
       first_name: '',
       last_name: '',
-      role_id: this.roles()[0]?.id ?? null,
+      role_id: defaultRole?.id ?? null,
       is_active: true,
       profile_image: ''
     };

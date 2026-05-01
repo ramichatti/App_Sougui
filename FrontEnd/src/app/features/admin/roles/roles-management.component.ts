@@ -115,12 +115,30 @@ export class RolesManagementComponent implements OnInit {
     const editing = this.editingRole();
     if (editing) {
       this.rolesService.updateRole(editing.id, this.roleForm).subscribe({
-        next: () => { this.notif.success('Rôle mis à jour'); this.closeRoleModal(); this.load(); },
+        next: (res) => {
+          // Check if privileges were auto-assigned
+          if (res.message && res.message.includes('privilege(s) automatically assigned')) {
+            this.notif.success('Rôle mis à jour avec tous les privilèges assignés automatiquement');
+          } else {
+            this.notif.success('Rôle mis à jour');
+          }
+          this.closeRoleModal();
+          this.load();
+        },
         error: (err) => this.notif.error(err.error?.error || 'Erreur lors de la mise à jour')
       });
     } else {
       this.rolesService.createRole(this.roleForm).subscribe({
-        next: () => { this.notif.success('Rôle créé'); this.closeRoleModal(); this.load(); },
+        next: (res) => {
+          // Check if privileges were auto-assigned
+          if (res.message && res.message.includes('privilege(s) automatically assigned')) {
+            this.notif.success('Rôle créé avec tous les privilèges assignés automatiquement');
+          } else {
+            this.notif.success('Rôle créé');
+          }
+          this.closeRoleModal();
+          this.load();
+        },
         error: (err) => this.notif.error(err.error?.error || 'Erreur lors de la création')
       });
     }
@@ -217,6 +235,17 @@ export class RolesManagementComponent implements OnInit {
 
   getUserInitials(user: User): string {
     return `${(user.first_name[0] || '').toUpperCase()}${(user.last_name[0] || '').toUpperCase()}`;
+  }
+
+  hasUserImage(user: User): boolean {
+    return !!(user.profile_image);
+  }
+
+  getUserImage(user: User): string {
+    if (!user.profile_image) return '';
+    return user.profile_image.startsWith('data:image')
+      ? user.profile_image
+      : 'data:image/jpeg;base64,' + user.profile_image;
   }
 
   getRoleName(roleId: number | null): string {

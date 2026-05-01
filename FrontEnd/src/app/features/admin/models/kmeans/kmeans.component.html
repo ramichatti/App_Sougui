@@ -1,0 +1,385 @@
+<app-navbar></app-navbar>
+
+<div class="model-page">
+  <!-- Header -->
+  <div class="model-header">
+    <div class="header-content">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
+        </svg>
+        Retour
+      </button>
+      <div class="header-title">
+        <div class="model-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Segmentation Clients (K-Means)</h1>
+          <p>Segmentation basée sur RFM et comportement d'achat</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="model-content">
+    <div class="content-grid">
+      <!-- Input Form -->
+      <div class="input-section">
+        <div class="section-card">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
+            </svg>
+            Données client (RFM + Comportement)
+          </h2>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Récence (jours)
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="recency" 
+                placeholder="Ex: 30"
+                step="1"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Jours depuis le dernier achat</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Fréquence
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="frequency" 
+                placeholder="Ex: 5"
+                step="1"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Nombre total de commandes</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Montant Total (DT)
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="monetary" 
+                placeholder="Ex: 500.0"
+                step="0.01"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Montant total dépensé</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Panier Moyen (DT)
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="panier_moyen" 
+                placeholder="Ex: 100.0"
+                step="0.01"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Montant moyen par commande</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                Quantité Totale
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="quantite_totale" 
+                placeholder="Ex: 15"
+                step="1"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Nombre total d'articles achetés</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                Taux de Réduction
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="taux_reduction" 
+                placeholder="Ex: 0.1 (10%)"
+                step="0.01"
+                min="0"
+                max="1"
+                [disabled]="isLoading()"
+              />
+              <small>Taux moyen de réduction (0.0 à 1.0)</small>
+            </div>
+
+            <div class="form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                Produits par Commande
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="produits_par_commande" 
+                placeholder="Ex: 3.0"
+                step="0.1"
+                min="0"
+                [disabled]="isLoading()"
+              />
+              <small>Nombre moyen de produits par commande</small>
+            </div>
+          </div>
+
+          @if (errorMsg()) {
+            <div class="error-msg">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <div class="form-actions">
+            <button class="btn-predict" (click)="predict()" [disabled]="isLoading() || !validateInputs()">
+              @if (isLoading()) {
+                <span class="spinner"></span>
+                Segmentation en cours...
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Segmenter le client
+              }
+            </button>
+            <button class="btn-reset" (click)="reset()" [disabled]="isLoading()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-section">
+        @if (result()) {
+          <div class="section-card">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Résultat de segmentation
+            </h2>
+
+            <div class="result-main">
+              <div class="cluster-badge">
+                <span class="cluster-label">Segment Client</span>
+                <span class="cluster-number">{{ result()!.cluster }}</span>
+                @if (result()!.cluster_name) {
+                  <span class="cluster-name">{{ result()!.cluster_name }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-icon" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                  </svg>
+                </div>
+                <div class="metric-info">
+                  <span class="metric-label">Nombre de segments</span>
+                  <span class="metric-value">{{ result()!.n_clusters }}</span>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                    <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                  </svg>
+                </div>
+                <div class="metric-info">
+                  <span class="metric-label">Distance au centre</span>
+                  <span class="metric-value">{{ result()!.distance_to_center?.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Input Summary -->
+            <div class="summary-section">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                Profil Client Analysé
+              </h3>
+              <div class="summary-grid">
+                <div class="summary-item rfm-item">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #ef4444, #f87171);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <div class="summary-content">
+                    <span class="summary-label">Récence</span>
+                    <span class="summary-value">{{ result()!.input_features.recency }}</span>
+                    <span class="summary-unit">jours</span>
+                  </div>
+                </div>
+
+                <div class="summary-item rfm-item">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                  </div>
+                  <div class="summary-content">
+                    <span class="summary-label">Fréquence</span>
+                    <span class="summary-value">{{ result()!.input_features.frequency }}</span>
+                    <span class="summary-unit">commandes</span>
+                  </div>
+                </div>
+
+                <div class="summary-item rfm-item">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <div class="summary-content">
+                    <span class="summary-label">Montant Total</span>
+                    <span class="summary-value">{{ result()!.input_features.monetary.toFixed(2) }}</span>
+                    <span class="summary-unit">DT</span>
+                  </div>
+                </div>
+
+                <div class="summary-item">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                  </div>
+                  <div class="summary-content">
+                    <span class="summary-label">Panier Moyen</span>
+                    <span class="summary-value">{{ result()!.input_features.panier_moyen.toFixed(2) }}</span>
+                    <span class="summary-unit">DT</span>
+                  </div>
+                </div>
+
+                <div class="summary-item">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                  </div>
+                  <div class="summary-content">
+                    <span class="summary-label">Quantité Totale</span>
+                    <span class="summary-value">{{ result()!.input_features.quantite_totale }}</span>
+                    <span class="summary-unit">articles</span>
+                  </div>
+                </div>
+
+                <div class="summary-item">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #ec4899, #f472b6);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                  </div>
+                  <div class="summary-content">
+                    <span class="summary-label">Taux Réduction</span>
+                    <span class="summary-value">{{ (result()!.input_features.taux_reduction * 100).toFixed(0) }}</span>
+                    <span class="summary-unit">%</span>
+                  </div>
+                </div>
+
+                <div class="summary-item">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #06b6d4, #22d3ee);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                  </div>
+                  <div class="summary-content">
+                    <span class="summary-label">Produits/Commande</span>
+                    <span class="summary-value">{{ result()!.input_features.produits_par_commande.toFixed(1) }}</span>
+                    <span class="summary-unit">produits</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RFM Badge -->
+              <div class="rfm-badge">
+                <div class="rfm-badge-header">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Analyse RFM
+                </div>
+                <div class="rfm-indicators">
+                  <div class="rfm-indicator">
+                    <span class="rfm-letter">R</span>
+                    <span class="rfm-desc">Récence</span>
+                  </div>
+                  <div class="rfm-indicator">
+                    <span class="rfm-letter">F</span>
+                    <span class="rfm-desc">Fréquence</span>
+                  </div>
+                  <div class="rfm-indicator">
+                    <span class="rfm-letter">M</span>
+                    <span class="rfm-desc">Montant</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="section-card empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" opacity="0.2">
+              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <h3>Aucun résultat</h3>
+            <p>Entrez les données client et cliquez sur "Segmenter le client"</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

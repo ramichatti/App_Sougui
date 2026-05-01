@@ -1,41 +1,82 @@
-<div class="dashboard-container">
-  <div class="dashboard-content">
-    @if (isLoading()) {
-      <div class="loading-container">
-        <div class="spinner"></div>
+<div class="db-page">
+
+  <!-- ── Loading ───────────────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <div class="db-state">
+      <div class="db-spinner"></div>
+      <p class="db-state-text">{{ translationService.translate('dashboard.loading') }}</p>
+    </div>
+  }
+
+  <!-- ── Error ─────────────────────────────────────────────────────────────── -->
+  @if (!isLoading() && errorMessage()) {
+    <div class="db-state">
+      <div class="db-state-icon db-state-icon--error">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
       </div>
-    } @else if (errorMessage()) {
-      <div class="alert alert-error">
-        {{ errorMessage() }}
+      <h3 class="db-state-title">{{ translationService.translate('dashboard.error') }}</h3>
+      <p class="db-state-text">{{ errorMessage() }}</p>
+      <button class="db-btn-retry" (click)="loadDashboards()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+        {{ translationService.translate('dashboard.retry') }}
+      </button>
+    </div>
+  }
+
+  <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
+  @if (!isLoading() && !errorMessage() && dashboards().length === 0) {
+    <div class="db-state">
+      <div class="db-state-icon db-state-icon--empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
       </div>
-    } @else if (dashboards().length === 0) {
-      <div class="card">
-        <div class="no-dashboards">
-          <div class="no-dashboards-icon">📊</div>
-          <h3>{{ translationService.translate('dashboard.noDashboards') }}</h3>
-          <p>{{ translationService.translate('dashboard.noDashboardsDesc') }}</p>
+      <h3 class="db-state-title">{{ translationService.translate('dashboard.noDashboards') }}</h3>
+      <p class="db-state-text">{{ translationService.translate('dashboard.noDashboardsDesc') }}</p>
+    </div>
+  }
+
+  <!-- ── Dashboard view ────────────────────────────────────────────────────── -->
+  @if (!isLoading() && !errorMessage() && getCurrentDashboard(); as dash) {
+    <!-- Slim title bar -->
+    <div class="db-bar">
+      <div class="db-bar-left">
+        <div class="db-bar-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div class="db-bar-info">
+          <span class="db-bar-name">{{ dash.dashboard_name }}</span>
+          @if (dash.description) {
+            <span class="db-bar-desc">{{ dash.description }}</span>
+          }
         </div>
       </div>
-    } @else {
-      <!-- Current Dashboard Display -->
-      @if (getCurrentDashboard(); as currentDashboard) {
-        <div class="dashboard-card">
-          <div class="dashboard-card-header">
-            <div class="header-content">
-              <h2 class="dashboard-card-title">{{ currentDashboard.dashboard_name }}</h2>
-              @if (currentDashboard.description) {
-                <p class="dashboard-card-description">{{ currentDashboard.description }}</p>
-              }
-            </div>
-          </div>
-          <iframe
-            [src]="getSafeUrl(currentDashboard.embed_url)"
-            class="powerbi-iframe"
-            frameborder="0"
-            allowFullScreen="true"
-          ></iframe>
-        </div>
+      <button class="db-btn-refresh" (click)="refreshDashboard()" [title]="translationService.translate('dashboard.refresh')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+        <span>{{ translationService.translate('dashboard.refresh') }}</span>
+      </button>
+    </div>
+
+    <!-- Iframe -->
+    <div class="db-frame-wrap">
+      @if (showIframe()) {
+        <iframe
+          class="db-iframe"
+          [src]="getSafeUrl(dash.embed_url)"
+          allowfullscreen
+          frameborder="0"
+          [title]="dash.dashboard_name"
+        ></iframe>
       }
-    }
-  </div>
+    </div>
+  }
+
 </div>

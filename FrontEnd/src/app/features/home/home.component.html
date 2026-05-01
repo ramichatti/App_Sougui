@@ -8,21 +8,20 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
-          Ultimate Decision Intelligence Platform
+          {{ translationService.translate('home.hero.badge') }}
         </div>
       </div>
       
       <h1 class="hero-title">
-        <span class="hero-title-main">Transform Data into</span>
+        <span class="hero-title-main">{{ translationService.translate('home.hero.title.main') }}</span>
         <span class="hero-title-highlight">
-          <span class="gradient-text">Intelligent Decisions</span>
+          <span class="gradient-text">{{ translationService.translate('home.hero.title.highlight') }}</span>
         </span>
-        <span class="hero-title-sub">with ML & BI Power</span>
+        <span class="hero-title-sub">{{ translationService.translate('home.hero.title.sub') }}</span>
       </h1>
       
       <p class="hero-subtitle">
-        Harness the power of Machine Learning and Business Intelligence to drive 
-        <span class="highlight-text">data-driven decisions</span> for your handcrafted products business
+        {{ translationService.translate('home.hero.subtitle') }}
       </p>
       
       <div class="hero-features-grid">
@@ -33,14 +32,14 @@
               <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
           </div>
-          <h3>Business Intelligence</h3>
-          <p>Real-time dashboards with interactive analytics and KPI tracking</p>
+          <h3>{{ translationService.translate('home.hero.feature1') }}</h3>
+          <p>{{ translationService.translate('home.hero.feature1.desc') }}</p>
           <div class="feature-stats">
             <span class="stat-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
-              Real-time
+              {{ translationService.translate('home.hero.feature1.badge') }}
             </span>
           </div>
         </div>
@@ -52,14 +51,14 @@
               <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
             </svg>
           </div>
-          <h3>Machine Learning</h3>
-          <p>Predictive analytics and intelligent automation for smarter operations</p>
+          <h3>{{ translationService.translate('home.hero.feature2') }}</h3>
+          <p>{{ translationService.translate('home.hero.feature2.desc') }}</p>
           <div class="feature-stats">
             <span class="stat-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
               </svg>
-              AI-Powered
+              {{ translationService.translate('home.hero.feature2.badge') }}
             </span>
           </div>
         </div>
@@ -71,14 +70,14 @@
               <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
           </div>
-          <h3>Smart Decisions</h3>
-          <p>Data-driven insights and actionable recommendations at your fingertips</p>
+          <h3>{{ translationService.translate('home.hero.feature3') }}</h3>
+          <p>{{ translationService.translate('home.hero.feature3.desc') }}</p>
           <div class="feature-stats">
             <span class="stat-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              Actionable
+              {{ translationService.translate('home.hero.feature3.badge') }}
             </span>
           </div>
         </div>
@@ -86,14 +85,14 @@
 
       <div class="hero-cta">
         <button class="hero-cta-primary" (click)="navigateTo('/dashboard')">
-          <span class="btn-text">Start Your Journey</span>
+          <span class="btn-text">{{ translationService.translate('home.hero.cta.start') }}</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M13 7l5 5m0 0l-5 5m5-5H6"/>
           </svg>
           <span class="btn-glow"></span>
         </button>
         <button class="hero-cta-secondary" (click)="scrollToFeatures()">
-          <span class="btn-text">Explore Features</span>
+          <span class="btn-text">{{ translationService.translate('home.hero.cta.explore') }}</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 9l-7 7-7-7"/>
           </svg>
@@ -105,19 +104,19 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
           </svg>
-          <span>Enterprise-Grade Security</span>
+          <span>{{ translationService.translate('home.hero.trust1') }}</span>
         </div>
         <div class="trust-badge">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
-          <span>Lightning Fast Performance</span>
+          <span>{{ translationService.translate('home.hero.trust2') }}</span>
         </div>
         <div class="trust-badge">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span>24/7 Support Available</span>
+          <span>{{ translationService.translate('home.hero.trust3') }}</span>
         </div>
       </div>
     </div>
@@ -150,7 +149,7 @@
       <div class="strip-stat-divider"></div>
       <div class="strip-stat-item">
         <span class="strip-stat-value">24/7</span>
-        <span class="strip-stat-label">Support</span>
+        <span class="strip-stat-label">{{ translationService.translate('home.stats.support') }}</span>
       </div>
     </div>
   </div>
@@ -378,8 +377,8 @@
                 <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
             </div>
-            <h3>Rôles & Privilèges</h3>
-            <p>Gérez les rôles utilisateurs et leurs privilèges d'accès</p>
+            <h3>{{ translationService.translate('home.rolesPrivileges.title') }}</h3>
+            <p>{{ translationService.translate('home.rolesPrivileges.desc') }}</p>
             <button class="feature-btn">
               {{ translationService.translate('home.feature.manage') }}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -395,7 +394,7 @@
               </svg>
             </div>
             <h3>{{ translationService.translate('nav.powerbi') }}</h3>
-            <p>Configurez et gérez vos dashboards Power BI</p>
+            <p>{{ translationService.translate('home.powerbi.desc') }}</p>
             <button class="feature-btn">
               {{ translationService.translate('home.feature.manage') }}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -483,8 +482,8 @@
                 <path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
               </svg>
             </div>
-            <h4>Configurer Dashboards</h4>
-            <p>Ajoutez et configurez de nouveaux dashboards Power BI</p>
+            <h4>{{ translationService.translate('home.dashboards.title') }}</h4>
+            <p>{{ translationService.translate('home.dashboards.desc') }}</p>
           </div>
         }
       }
@@ -610,7 +609,7 @@
               @if (authService.currentUser(); as user) {
                 @if (user.role === 'admin') {
                   <li><a (click)="navigateTo('/admin/users')">{{ translationService.translate('nav.users') }}</a></li>
-                  <li><a (click)="navigateTo('/admin/roles')">Rôles & Privilèges</a></li>
+                  <li><a (click)="navigateTo('/admin/roles')">{{ translationService.translate('home.rolesPrivileges.title') }}</a></li>
                   <li><a (click)="navigateTo('/admin/powerbi')">{{ translationService.translate('nav.powerbi') }}</a></li>
                 }
               }

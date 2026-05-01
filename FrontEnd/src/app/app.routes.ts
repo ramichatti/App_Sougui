@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminSecurityGuard } from './core/guards/admin-security.guard';
 
 export const routes: Routes = [
   {
@@ -31,19 +32,39 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'admin/confirm',
+    loadComponent: () => import('./features/admin/confirm/admin-confirm.component').then(m => m.AdminConfirmComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'admin/users',
     loadComponent: () => import('./features/admin/users/users.component').then(m => m.UsersComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard, adminSecurityGuard]
   },
   {
     path: 'admin/roles',
     loadComponent: () => import('./features/admin/roles/roles-management.component').then(m => m.RolesManagementComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard, adminSecurityGuard]
   },
   {
     path: 'admin/powerbi',
     loadComponent: () => import('./features/admin/powerbi/powerbi-management.component').then(m => m.PowerBIManagementComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard, adminSecurityGuard]
+  },
+  {
+    path: 'admin/models',
+    loadComponent: () => import('./features/admin/models/models.component').then(m => m.ModelsComponent),
+    canActivate: [authGuard, adminSecurityGuard]
+  },
+  {
+    path: 'admin/models/best-seller',
+    loadComponent: () => import('./features/admin/models/best-seller/best-seller.component').then(m => m.BestSellerComponent),
+    canActivate: [authGuard, adminSecurityGuard]
+  },
+  {
+    path: 'admin/models/kmeans',
+    loadComponent: () => import('./features/admin/models/kmeans/kmeans.component').then(m => m.KmeansComponent),
+    canActivate: [authGuard, adminSecurityGuard]
   },
   {
     path: '',

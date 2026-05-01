@@ -234,7 +234,13 @@
                   }
                   @for (u of getUsersForRole(role); track u.id) {
                     <div class="member-row">
-                      <div class="member-avatar">{{ getUserInitials(u) }}</div>
+                      <div class="member-avatar">
+                        @if (hasUserImage(u)) {
+                          <img [src]="getUserImage(u)" [alt]="u.first_name" class="member-avatar-img"/>
+                        } @else {
+                          {{ getUserInitials(u) }}
+                        }
+                      </div>
                       <div class="member-info">
                         <span class="member-name">{{ u.first_name }} {{ u.last_name }}</span>
                         <span class="member-email">{{ u.email }}</span>
@@ -366,7 +372,13 @@
         @for (user of users(); track user.id) {
           <div class="user-card" [class.user-card--admin]="user.is_admin">
             <div class="user-card-top">
-              <div class="user-avatar" [style.background]="getRoleColor(user.role_id)">{{ getUserInitials(user) }}</div>
+              <div class="user-avatar" [style.background]="getRoleColor(user.role_id)">
+                @if (hasUserImage(user)) {
+                  <img [src]="getUserImage(user)" [alt]="user.first_name" class="user-avatar-img"/>
+                } @else {
+                  {{ getUserInitials(user) }}
+                }
+              </div>
               <div class="user-info">
                 <p class="user-name">{{ user.first_name }} {{ user.last_name }}</p>
                 <p class="user-email">{{ user.email }}</p>
