@@ -1,0 +1,438 @@
+<div class="ml-container">
+  <div class="ml-content">
+
+    <!-- ── Header ────────────────────────────────────────────────────────────── -->
+    <div class="ml-header">
+      <div class="ml-header-left">
+        <div class="ml-header-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="ml-title">{{ translate.translate('ml.title') }}</h1>
+          <p class="ml-subtitle">{{ translate.translate('ml.subtitle') }}</p>
+        </div>
+      </div>
+      @if (modelInfo(); as info) {
+        <div class="model-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          {{ info.model_type }}
+        </div>
+      }
+    </div>
+
+    <!-- ── Predictions Results (Moved to Top) ─────────────────────────────────── -->
+    @if (predictions(); as pred) {
+      <div class="results-section results-section--top">
+        <div class="results-header">
+          <div class="results-header-left">
+            <div class="results-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="results-title">{{ translate.translate('ml.predictionResults') }}</h2>
+              <p class="results-subtitle">{{ pred.product.name }} · {{ pred.product.reference }}</p>
+            </div>
+          </div>
+          <button class="btn-clear-results" (click)="clearSelection()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            {{ translate.translate('ml.clear') }}
+          </button>
+        </div>
+
+        <!-- Monthly Predictions -->
+        <div class="predictions-grid">
+          @for (prediction of pred.predictions; track $index) {
+            <div class="prediction-card">
+              <div class="prediction-card__head">
+                <div class="prediction-month">
+                  <div class="month-name">{{ prediction.month_name }}</div>
+                  <div class="month-year">{{ prediction.year }}</div>
+                </div>
+                <span class="trimestre-badge">T{{ prediction.trimestre }}</span>
+              </div>
+              <div class="prediction-card__body">
+                <div class="quantity-value">{{ formatNumber(prediction.predicted_quantity) }}</div>
+                <div class="quantity-label">{{ translate.translate('ml.unitsPredicted') }}</div>
+                
+                <!-- Confidence Score -->
+                <div class="confidence-bar-container">
+                  <div class="confidence-bar-label">
+                    <span>{{ translate.translate('ml.confidence') }}</span>
+                    <span class="confidence-percentage" [style.color]="getConfidenceColor(prediction.confidence)">
+                      {{ prediction.confidence }}%
+                    </span>
+                  </div>
+                  <div class="confidence-bar-track">
+                    <div class="confidence-bar-fill" 
+                         [style.width.%]="prediction.confidence"
+                         [style.background]="getConfidenceColor(prediction.confidence)">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Prediction Bounds -->
+                <div class="bounds-container">
+                  <div class="bound-item">
+                    <span class="bound-label">{{ translate.translate('ml.min') }}</span>
+                    <span class="bound-value">{{ formatNumber(prediction.lower_bound) }}</span>
+                  </div>
+                  <div class="bound-separator">—</div>
+                  <div class="bound-item">
+                    <span class="bound-label">{{ translate.translate('ml.max') }}</span>
+                    <span class="bound-value">{{ formatNumber(prediction.upper_bound) }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="prediction-card__footer">
+                <div class="revenue-row">
+                  <span class="revenue-label">{{ translate.translate('ml.estimatedRevenue') }}</span>
+                  <span class="revenue-value">{{ formatCurrency(prediction.predicted_quantity * pred.product.price) }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Analysis Section -->
+        <div class="analysis-section">
+          <h3 class="section-title">{{ translate.translate('ml.advancedAnalysisTitle') }}</h3>
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="analysis-icon" [style.background]="getTrendColor(pred.analysis.trend_direction) + '20'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" [attr.stroke]="getTrendColor(pred.analysis.trend_direction)" stroke-width="2">
+                  <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+              </div>
+              <div class="analysis-content">
+                <div class="analysis-label">{{ translate.translate('ml.trendLabel') }}</div>
+                <div class="analysis-value" [style.color]="getTrendColor(pred.analysis.trend_direction)">
+                  {{ getTrendIcon(pred.analysis.trend_direction) }} {{ getTrendLabel(pred.analysis.trend_direction) }}
+                  @if (pred.analysis.trend_percentage > 0) {
+                    <span class="analysis-subvalue">({{ pred.analysis.trend_percentage }}%)</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="analysis-icon" style="background: #dbeafe;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2">
+                  <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <div class="analysis-content">
+                <div class="analysis-label">{{ translate.translate('ml.volatilityLabel') }}</div>
+                <div class="analysis-value" style="color: #1e40af;">
+                  {{ pred.analysis.volatility }}%
+                  <span class="analysis-subvalue">({{ getVolatilityLabel(pred.analysis.volatility) }})</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="analysis-icon" [style.background]="getDataQualityBadge(pred.analysis.data_quality).color + '20'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" [attr.stroke]="getDataQualityBadge(pred.analysis.data_quality).color" stroke-width="2">
+                  <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              </div>
+              <div class="analysis-content">
+                <div class="analysis-label">{{ translate.translate('ml.dataQuality') }}</div>
+                <div class="analysis-value" [style.color]="getDataQualityBadge(pred.analysis.data_quality).color">
+                  {{ getDataQualityBadge(pred.analysis.data_quality).text }}
+                  <span class="analysis-subvalue">({{ pred.historical_data.total_months }} {{ translate.currentLanguage() === 'fr' ? 'mois' : 'months' }})</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="analysis-icon" style="background: #fef3c7;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </div>
+              <div class="analysis-content">
+                <div class="analysis-label">{{ translate.translate('ml.seasonality') }}</div>
+                <div class="analysis-value" style="color: #f59e0b;">
+                  {{ pred.analysis.seasonality_detected ? translate.translate('ml.seasonalityDetected') : translate.translate('ml.seasonalityNotDetected') }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historical Data -->
+        <div class="historical-section">
+          <h3 class="section-title">{{ translate.translate('ml.historicalData') }}</h3>
+          <div class="historical-grid">
+            @for (hist of pred.historical_data.last_6_months; track $index) {
+              <div class="historical-card">
+                <div class="historical-period">{{ hist.Mois }}/{{ hist.Annee }}</div>
+                <div class="historical-quantity">{{ formatNumber(hist.Quantite_Totale) }}</div>
+                <div class="historical-label">{{ translate.translate('ml.unitsSold') }}</div>
+                <div class="historical-details">
+                  <div class="historical-detail-item">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                    {{ hist.Nb_Commandes }} {{ translate.translate('ml.orders') }}
+                  </div>
+                  <div class="historical-detail-item">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    {{ hist.Nb_Clients }} {{ translate.translate('ml.customers') }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── KPI Cards ──────────────────────────────────────────────────────────── -->
+    @if (predictions(); as pred) {
+      <div class="kpi-row">
+        <div class="kpi-card kpi--purple">
+          <div class="kpi-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ formatNumber(getTotalPredicted()) }}</div>
+            <div class="kpi-lbl">{{ translate.translate('ml.totalPredicted') }}</div>
+          </div>
+          <div class="kpi-pill kpi-pill--purple">{{ translate.translate('ml.prediction') }}</div>
+        </div>
+        <div class="kpi-card kpi--blue">
+          <div class="kpi-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ pred.analysis.average_confidence }}%</div>
+            <div class="kpi-lbl">{{ translate.translate('ml.averageConfidence') }}</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi--green">
+          <div class="kpi-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val" [style.color]="getTrendColor(pred.analysis.trend_direction)">
+              {{ getTrendIcon(pred.analysis.trend_direction) }} {{ pred.analysis.trend_percentage }}%
+            </div>
+            <div class="kpi-lbl">{{ translate.translate('ml.trend') }} {{ getTrendLabel(pred.analysis.trend_direction) }}</div>
+          </div>
+        </div>
+        <div class="kpi-card kpi--orange">
+          <div class="kpi-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ pred.analysis.volatility }}%</div>
+            <div class="kpi-lbl">{{ translate.translate('ml.volatility') }}</div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Toolbar ────────────────────────────────────────────────────────────── -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="search-input" 
+               type="text" 
+               [value]="searchTerm()" 
+               (input)="onSearchChange($any($event.target).value)" 
+               [placeholder]="translate.translate('ml.searchProduct')"/>
+        @if (searchTerm()) {
+          <button class="search-clear" (click)="clearSearch()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        }
+      </div>
+
+      <div class="filter-pills">
+        <button class="fpill" [class.fpill--active]="selectedCategory() === 'all'" (click)="onCategoryChange('all')">
+          {{ translate.translate('ml.all') }} <span class="fpill-count">{{ products().length }}</span>
+        </button>
+        @for (cat of categories(); track cat) {
+          <button class="fpill" [class.fpill--active]="selectedCategory() === cat" (click)="onCategoryChange(cat)">
+            {{ cat }}
+          </button>
+        }
+      </div>
+
+      @if (selectedProduct()) {
+        <button class="btn-predict-toolbar" (click)="predictDemand()" [disabled]="isLoadingPrediction()">
+          @if (isLoadingPrediction()) {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="spin">
+              <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            {{ translate.translate('ml.analyzing') }}
+          } @else {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            {{ translate.translate('ml.predict') }}
+          }
+        </button>
+      }
+    </div>
+
+    <!-- ── Loading ────────────────────────────────────────────────────────────── -->
+    @if (isLoadingProducts()) {
+      <div class="loading-area">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    }
+
+    <!-- ── Products Grid ──────────────────────────────────────────────────────── -->
+    @if (!isLoadingProducts()) {
+      <div class="products-section">
+        <div class="products-header">
+          <div class="products-count">
+            <span class="count-number">{{ filteredProducts().length }}</span>
+            <span class="count-label">{{ filteredProducts().length > 1 ? translate.translate('ml.productsFoundPlural') : translate.translate('ml.productsFound') }}</span>
+            @if (totalPages() > 1) {
+              <span class="page-indicator">· {{ translate.translate('ml.page') }} {{ currentPage() }} {{ translate.translate('ml.of') }} {{ totalPages() }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="products-grid">
+          @for (product of paginatedProducts(); track product.Id_Produit) {
+            <div class="product-card" [class.product-card--selected]="selectedProduct()?.Id_Produit === product.Id_Produit" (click)="selectProduct(product)">
+              <div class="product-card__accent" [class.product-card__accent--selected]="selectedProduct()?.Id_Produit === product.Id_Produit"></div>
+
+              <div class="product-card__head">
+                <div class="product-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                  </svg>
+                </div>
+                <div class="product-badges">
+                  <span class="product-category-badge">{{ product.Produit_Categorie }}</span>
+                  @if (product.history_months !== undefined) {
+                    @if (product.has_sufficient_data) {
+                      <span class="product-history-badge product-history-badge--good" 
+                            [title]="product.history_months + ' ' + (translate.currentLanguage() === 'fr' ? 'mois d\'historique' : 'months of history')">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                        {{ product.history_months }}m
+                      </span>
+                    } @else {
+                      <span class="product-history-badge product-history-badge--warning" 
+                            [title]="product.history_months + ' ' + (translate.currentLanguage() === 'fr' ? 'mois d\'historique (minimum 2 requis)' : 'months of history (minimum 2 required)')">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        {{ product.history_months }}m
+                      </span>
+                    }
+                  }
+                </div>
+              </div>
+
+              <div class="product-card__body">
+                <div class="product-ref">{{ product.Produit_Reference }}</div>
+                <h3 class="product-name">{{ product.Produit_Nom }}</h3>
+                <p class="product-desc">{{ product.Produit_Description }}</p>
+                <div class="product-price">{{ formatCurrency(product.Produit_PU_HT) }}</div>
+              </div>
+
+              <div class="product-card__footer">
+                <button class="btn-select" [class.btn-select--selected]="selectedProduct()?.Id_Produit === product.Id_Produit">
+                  @if (selectedProduct()?.Id_Produit === product.Id_Produit) {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M5 13l4 4L19 7"/>
+                    </svg>
+                    {{ translate.translate('ml.selected') }}
+                  } @else {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 5l7 7-7 7"/>
+                    </svg>
+                    {{ translate.translate('ml.select') }}
+                  }
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (filteredProducts().length === 0) {
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+              </div>
+              <h3>{{ translate.translate('ml.noProducts') }}</h3>
+              <p>{{ translate.translate('ml.noProductsDesc') }}</p>
+            </div>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages() > 1 && filteredProducts().length > 0) {
+          <div class="pagination">
+            <button class="pagination-btn pagination-btn--prev" 
+                    [disabled]="currentPage() === 1" 
+                    (click)="previousPage()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+              {{ translate.translate('ml.previous') }}
+            </button>
+
+            <div class="pagination-numbers">
+              @for (page of pageNumbers(); track page) {
+                @if (page === -1) {
+                  <span class="pagination-ellipsis">...</span>
+                } @else {
+                  <button class="pagination-number" 
+                          [class.pagination-number--active]="currentPage() === page"
+                          (click)="goToPage(page)">
+                    {{ page }}
+                  </button>
+                }
+              }
+            </div>
+
+            <button class="pagination-btn pagination-btn--next" 
+                    [disabled]="currentPage() === totalPages()" 
+                    (click)="nextPage()">
+              {{ translate.translate('ml.next') }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+
+
+  </div>
+</div>

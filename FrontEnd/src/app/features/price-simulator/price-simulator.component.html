@@ -1,0 +1,437 @@
+<div class="ps-container">
+  <div class="ps-content">
+
+    <!-- ── Header ────────────────────────────────────────────────────────────── -->
+    <div class="ps-header">
+      <div class="ps-header-left">
+        <div class="ps-header-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="ps-title">{{ translate.translate('priceSimulator.title') }}</h1>
+          <p class="ps-subtitle">{{ translate.translate('priceSimulator.subtitle') }}</p>
+        </div>
+      </div>
+      <div class="ps-header-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+        Random Forest
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card kpi--blue">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 7h-9M14 17H5M17 12H3"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ filteredProducts().length }}</div>
+          <div class="kpi-lbl">Produits</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi--green">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ selectedProduct()?.sougui_price || 0 | number:'1.0-0' }}</div>
+          <div class="kpi-lbl">Prix Actuel (TND)</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi--purple">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ simulationResult()?.competitiveness_analysis?.competitiveness || '—' }}</div>
+          <div class="kpi-lbl">Compétitivité</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="split">
+
+      <!-- Left: Product Selection -->
+      <div class="split-left">
+        <div class="panel-head">
+          <div class="panel-head-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+            <span class="panel-title">{{ translate.translate('priceSimulator.selectProduct') }}</span>
+            <span class="count-chip">{{ filteredProducts().length }}</span>
+          </div>
+          <span class="panel-source">DWH</span>
+        </div>
+
+        <!-- Search -->
+        <div class="panel-search" [class.panel-search--active]="searchTerm.length > 0">
+          @if (isSearching()) {
+            <div class="search-spinner"></div>
+          } @else {
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          }
+          <input class="panel-search-input" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+                 [placeholder]="translate.translate('priceSimulator.searchPlaceholder')"/>
+          @if (searchTerm) {
+            <button class="panel-search-clear" (click)="clearSearch()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          }
+        </div>
+
+        @if (!searchTerm) {
+          <div class="search-hint">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            Recherchez par référence ou nom
+          </div>
+        }
+
+        <!-- Products List -->
+        <div class="products-list">
+          @if (isLoadingProducts()) {
+            <div class="loading-state">
+              <div class="loading-spinner"></div>
+              <span>{{ translate.translate('priceSimulator.loading') }}</span>
+            </div>
+          } @else if (filteredProducts().length === 0 && searchTerm) {
+            <div class="empty-state">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span>Aucun résultat pour "{{ searchTerm }}"</span>
+            </div>
+          } @else if (filteredProducts().length === 0) {
+            <div class="empty-state">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 7h-9M14 17H5M17 12H3"/>
+              </svg>
+              <span>{{ translate.translate('priceSimulator.noProducts') }}</span>
+            </div>
+          } @else {
+            @for (product of filteredProducts(); track product.id) {
+              <div class="product-item" 
+                   [class.product-item--selected]="selectedProduct()?.id === product.id"
+                   (click)="selectProduct(product)">
+                <div class="product-main">
+                  <div class="product-ref">{{ product.reference }}</div>
+                  <div class="product-name">{{ product.name }}</div>
+                  <div class="product-meta">
+                    <div class="product-price">{{ product.sougui_price | number:'1.2-2' }} TND</div>
+                    <div class="product-position" [class]="getPositionClass(product.position)">
+                      {{ getPositionText(product.position) }}
+                    </div>
+                  </div>
+                  @if (product.avg_competitor_price) {
+                    <div class="product-competitors">
+                      <small>Concurrents: {{ product.avg_competitor_price | number:'1.2-2' }} TND</small>
+                    </div>
+                  }
+                </div>
+                <div class="product-arrow">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5l7 7-7 7"/>
+                  </svg>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Right: Simulation Panel -->
+      <div class="split-right">
+        @if (!selectedProduct()) {
+          <div class="empty-panel">
+            <div class="empty-panel-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <h3>{{ translate.translate('priceSimulator.selectProductToStart') }}</h3>
+            <p>{{ translate.translate('priceSimulator.selectProductDesc') }}</p>
+          </div>
+        } @else {
+          <!-- Current Product Info -->
+          <div class="info-panel">
+            <div class="info-panel-head">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              <span>{{ translate.translate('priceSimulator.currentSituation') }}</span>
+            </div>
+            <div class="info-panel-body">
+              <div class="product-info">
+                <div class="product-info-main">
+                  <div class="product-info-ref">{{ selectedProduct()!.reference }}</div>
+                  <div class="product-info-name">{{ selectedProduct()!.name }}</div>
+                </div>
+                <div class="product-info-price">{{ selectedProduct()!.sougui_price | number:'1.2-2' }} TND</div>
+              </div>
+              @if (selectedProduct()!.avg_competitor_price) {
+                <div class="competitors-info">
+                  <div class="competitors-title">Prix Concurrents</div>
+                  <div class="competitors-list">
+                    @if (selectedProduct()!.kalys_price) {
+                      <div class="competitor-item">
+                        <span>Kalys:</span>
+                        <span>{{ selectedProduct()!.kalys_price | number:'1.2-2' }} TND</span>
+                      </div>
+                    }
+                    @if (selectedProduct()!.ileycom_price) {
+                      <div class="competitor-item">
+                        <span>Ileycom:</span>
+                        <span>{{ selectedProduct()!.ileycom_price | number:'1.2-2' }} TND</span>
+                      </div>
+                    }
+                    <div class="competitor-item competitor-avg">
+                      <span>Moyenne:</span>
+                      <span>{{ selectedProduct()!.avg_competitor_price | number:'1.2-2' }} TND</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Price Simulator -->
+          <div class="sim-panel">
+            <div class="sim-panel-head">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+              <span>{{ translate.translate('priceSimulator.priceSimulator') }}</span>
+            </div>
+            <div class="sim-panel-body">
+              <div class="price-input-group">
+                <label for="newPrice">Nouveau Prix (TND)</label>
+                <div class="price-input-wrapper">
+                  <input type="number" 
+                         id="newPrice"
+                         class="price-input"
+                         [(ngModel)]="newPrice"
+                         (input)="onPriceChange($event)"
+                         min="0"
+                         step="0.01"
+                         placeholder="Saisissez le nouveau prix">
+                  <span class="price-currency">TND</span>
+                </div>
+                <div class="price-hint">Prix actuel: {{ selectedProduct()!.sougui_price | number:'1.2-2' }} TND</div>
+              </div>
+
+              <button class="simulate-btn" 
+                      (click)="simulatePrice()"
+                      [disabled]="isSimulating() || newPrice <= 0">
+                @if (isSimulating()) {
+                  <div class="btn-spinner"></div>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                    <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.292-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.292c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                  </svg>
+                }
+                <span>{{ isSimulating() ? translate.translate('priceSimulator.simulating') : translate.translate('priceSimulator.simulate') }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Results -->
+          @if (simulationResult()) {
+            <div class="result-panel">
+              <div class="result-panel-head">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                </svg>
+                <span>{{ translate.translate('priceSimulator.simulationResults') }}</span>
+              </div>
+              <div class="result-panel-body">
+                <!-- AI Recommendation -->
+                <div class="recommendation" [class]="getRecommendationClass(simulationResult()!.recommendation.type)">
+                  <div class="recommendation-header">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                    🤖 {{ translate.translate('priceSimulator.aiRecommendation') }}
+                  </div>
+                  <div class="recommendation-message" [innerHTML]="simulationResult()!.recommendation.message"></div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                  <div class="metric-card">
+                    <div class="metric-label">Prix Actuel</div>
+                    <div class="metric-value">{{ simulationResult()!.current_price | number:'1.2-2' }} TND</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Nouveau Prix</div>
+                    <div class="metric-value metric-value--primary">{{ simulationResult()!.new_price | number:'1.2-2' }} TND</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Changement</div>
+                    <div class="metric-value" [class.metric-value--success]="simulationResult()!.price_change < 0" [class.metric-value--danger]="simulationResult()!.price_change > 0">
+                      {{ simulationResult()!.price_change > 0 ? '+' : '' }}{{ simulationResult()!.price_change | number:'1.2-2' }} TND
+                      ({{ simulationResult()!.price_change_percentage > 0 ? '+' : '' }}{{ simulationResult()!.price_change_percentage | number:'1.1-1' }}%)
+                    </div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Score Compétitivité</div>
+                    <div class="metric-value" [class.metric-value--success]="simulationResult()!.competitiveness_analysis.competitiveness_score >= 70" [class.metric-value--warning]="simulationResult()!.competitiveness_analysis.competitiveness_score >= 50 && simulationResult()!.competitiveness_analysis.competitiveness_score < 70" [class.metric-value--danger]="simulationResult()!.competitiveness_analysis.competitiveness_score < 50">
+                      {{ simulationResult()!.competitiveness_analysis.competitiveness_score }}%
+                    </div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Position</div>
+                    <div class="metric-badge" [class]="getPositionClass(simulationResult()!.competitiveness_analysis.position)">
+                      {{ getPositionText(simulationResult()!.competitiveness_analysis.position) }}
+                    </div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Segment</div>
+                    <div class="metric-value">{{ simulationResult()!.competitiveness_analysis.price_segment }}</div>
+                    <div class="metric-hint">{{ simulationResult()!.competitiveness_analysis.segment_strategy }}</div>
+                  </div>
+                </div>
+
+                <!-- Advanced Analysis -->
+                <div class="advanced-analysis">
+                  <div class="analysis-section">
+                    <div class="analysis-title">📊 Analyse de la Demande</div>
+                    <div class="analysis-grid">
+                      <div class="analysis-item">
+                        <span>Impact Volume:</span>
+                        <span class="analysis-value" [class.analysis-value--success]="simulationResult()!.business_impact.demand_change_percentage > 0" [class.analysis-value--danger]="simulationResult()!.business_impact.demand_change_percentage < 0">
+                          {{ simulationResult()!.business_impact.demand_change_percentage > 0 ? '+' : '' }}{{ simulationResult()!.business_impact.demand_change_percentage | number:'1.1-1' }}%
+                        </span>
+                      </div>
+                      <div class="analysis-item">
+                        <span>Volume Estimé:</span>
+                        <span class="analysis-value">{{ simulationResult()!.business_impact.estimated_new_volume | number:'1.1-1' }} unités</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="analysis-section">
+                    <div class="analysis-title">💰 Analyse des Marges</div>
+                    <div class="analysis-grid">
+                      <div class="analysis-item">
+                        <span>Marge Actuelle:</span>
+                        <span class="analysis-value">{{ simulationResult()!.business_impact.margin_analysis.current_margin | number:'1.2-2' }} TND</span>
+                      </div>
+                      <div class="analysis-item">
+                        <span>Nouvelle Marge:</span>
+                        <span class="analysis-value" [class.analysis-value--success]="simulationResult()!.business_impact.margin_analysis.margin_change > 0" [class.analysis-value--danger]="simulationResult()!.business_impact.margin_analysis.margin_change < 0">
+                          {{ simulationResult()!.business_impact.margin_analysis.new_margin | number:'1.2-2' }} TND
+                          ({{ simulationResult()!.business_impact.margin_analysis.margin_change > 0 ? '+' : '' }}{{ simulationResult()!.business_impact.margin_analysis.margin_change_percentage | number:'1.1-1' }}%)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="analysis-section">
+                    <div class="analysis-title">🤖 Analyse ML</div>
+                    <div class="ml-interpretation">
+                      {{ simulationResult()!.ml_predictions.interpretation }}
+                    </div>
+                    <div class="ml-details">
+                      <div class="ml-item">
+                        <span>Prédiction Actuelle:</span>
+                        <span>{{ simulationResult()!.ml_predictions.current_prediction === 1 ? 'Compétitif' : 'Non Compétitif' }} ({{ (simulationResult()!.ml_predictions.current_probability[1] * 100) | number:'1.1-1' }}%)</span>
+                      </div>
+                      <div class="ml-item">
+                        <span>Nouvelle Prédiction:</span>
+                        <span>{{ simulationResult()!.ml_predictions.new_prediction === 1 ? 'Compétitif' : 'Non Compétitif' }} ({{ (simulationResult()!.ml_predictions.new_probability[1] * 100) | number:'1.1-1' }}%)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Risk Analysis -->
+                @if (simulationResult()!.risk_analysis.risks.length > 0 || simulationResult()!.risk_analysis.opportunities.length > 0) {
+                  <div class="risk-analysis">
+                    @if (simulationResult()!.risk_analysis.risks.length > 0) {
+                      <div class="risk-section">
+                        <div class="risk-title">⚠️ Risques Identifiés</div>
+                        <ul class="risk-list">
+                          @for (risk of simulationResult()!.risk_analysis.risks; track risk) {
+                            <li>{{ risk }}</li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                    @if (simulationResult()!.risk_analysis.opportunities.length > 0) {
+                      <div class="opportunity-section">
+                        <div class="opportunity-title">🚀 Opportunités</div>
+                        <ul class="opportunity-list">
+                          @for (opportunity of simulationResult()!.risk_analysis.opportunities; track opportunity) {
+                            <li>{{ opportunity }}</li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Business Impact -->
+                <div class="impact-section">
+                  <div class="impact-title">💼 Impact Business Global</div>
+                  <div class="impact-grid">
+                    <div class="impact-item">
+                      <span>CA (100 unités):</span>
+                      <span class="impact-value" [class.impact-value--success]="simulationResult()!.business_impact.revenue_impact_per_100_units > 0" [class.impact-value--danger]="simulationResult()!.business_impact.revenue_impact_per_100_units < 0">
+                        {{ simulationResult()!.business_impact.revenue_impact_per_100_units > 0 ? '+' : '' }}{{ simulationResult()!.business_impact.revenue_impact_per_100_units | number:'1.0-0' }} TND
+                      </span>
+                    </div>
+                    <div class="impact-item">
+                      <span>Score Compétitivité Global:</span>
+                      <span class="impact-value" [class.impact-value--success]="simulationResult()!.business_impact.competitiveness_score_impact > 0" [class.impact-value--danger]="simulationResult()!.business_impact.competitiveness_score_impact < 0">
+                        {{ simulationResult()!.business_impact.competitiveness_score_impact > 0 ? '+' : '' }}{{ simulationResult()!.business_impact.competitiveness_score_impact | number:'1.2-2' }}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        {{ errorMessage() }}
+      </div>
+    }
+
+  </div>
+</div>

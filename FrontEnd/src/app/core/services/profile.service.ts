@@ -44,4 +44,12 @@ export class ProfileService {
   changePasswordWithCode(data: { code: string; current_password: string; new_password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/profile/change-password-with-code`, data);
   }
+
+  requestEmailChange(newEmail: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/profile/request-email-change`, { new_email: newEmail });
+  }
+
+  verifyEmailChangeCode(code: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/profile/verify-email-change-code`, { code });
+  }
 }

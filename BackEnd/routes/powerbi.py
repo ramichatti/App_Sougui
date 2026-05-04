@@ -123,7 +123,7 @@ def update_dashboard(dashboard_id):
 @powerbi_bp.route('/dashboards/<int:dashboard_id>', methods=['DELETE'])
 @jwt_required()
 def delete_dashboard(dashboard_id):
-    """Delete a dashboard and its linked privileges (admin only)."""
+    """Delete a dashboard (admin only). Privileges are deleted in cascade automatically."""
     try:
         user = _get_user()
         if not user or not user.is_admin:
@@ -133,9 +133,18 @@ def delete_dashboard(dashboard_id):
         if not dashboard:
             return jsonify({'error': 'Dashboard not found'}), 404
 
+        # Count privileges that will be deleted
+        privilege_count = Privilege.query.filter_by(dashboard_id=dashboard_id).count()
+
+        # Delete dashboard (privileges will be deleted in cascade due to FK constraint)
         db.session.delete(dashboard)
         db.session.commit()
-        return jsonify({'message': 'Dashboard deleted successfully'}), 200
+        
+        message = 'Dashboard deleted successfully'
+        if privilege_count > 0:
+            message += f' ({privilege_count} privilege(s) deleted in cascade)'
+        
+        return jsonify({'message': message}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Failed to delete dashboard', 'details': str(e)}), 500

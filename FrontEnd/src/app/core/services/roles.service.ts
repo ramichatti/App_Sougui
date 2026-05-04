@@ -16,12 +16,12 @@ export class RolesService {
     return this.http.get<{ roles: Role[] }>(`${this.api}/roles`);
   }
 
-  createRole(data: Partial<Role>): Observable<{ role: Role }> {
-    return this.http.post<{ role: Role }>(`${this.api}/roles`, data);
+  createRole(data: Partial<Role>): Observable<{ message?: string; role: Role }> {
+    return this.http.post<{ message?: string; role: Role }>(`${this.api}/roles`, data);
   }
 
-  updateRole(id: number, data: Partial<Role>): Observable<{ role: Role }> {
-    return this.http.put<{ role: Role }>(`${this.api}/roles/${id}`, data);
+  updateRole(id: number, data: Partial<Role>): Observable<{ message?: string; role: Role }> {
+    return this.http.put<{ message?: string; role: Role }>(`${this.api}/roles/${id}`, data);
   }
 
   deleteRole(id: number): Observable<any> {

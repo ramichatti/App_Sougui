@@ -206,19 +206,28 @@ export class UsersComponent implements OnInit {
     const currentUser = this.authService.currentUser();
 
     if (editing) {
+      const isCurrentUser = currentUser && editing.id === currentUser.id;
+      const roleChanged = isCurrentUser && this.userForm.role_id !== currentUser.role_id;
+      
       this.adminService.updateUser(editing.id, this.userForm).subscribe({
         next: (res) => {
           this.isSaving.set(false);
-          if (currentUser && editing.id === currentUser.id) {
-            const updated = {
-              ...currentUser,
-              first_name: this.userForm.first_name,
-              last_name: this.userForm.last_name,
-              email: this.userForm.email,
-              profile_image: res.user?.profile_image || currentUser.profile_image
-            };
-            this.authService.currentUser.set(updated);
-            localStorage.setItem('user', JSON.stringify(updated));
+          if (isCurrentUser) {
+            // Si le rôle a changé, rafraîchir complètement les données utilisateur
+            if (roleChanged) {
+              this.authService.refreshUser();
+            } else {
+              // Sinon, juste mettre à jour les infos de base
+              const updated = {
+                ...currentUser,
+                first_name: this.userForm.first_name,
+                last_name: this.userForm.last_name,
+                email: this.userForm.email,
+                profile_image: res.user?.profile_image || currentUser.profile_image
+              };
+              this.authService.currentUser.set(updated);
+              localStorage.setItem('user', JSON.stringify(updated));
+            }
           }
           this.notif.success('Utilisateur mis à jour avec succès');
           this.closeModal();
@@ -259,12 +268,15 @@ export class UsersComponent implements OnInit {
   }
 
   private resetForm(): void {
+    // Find default role (first non-admin role, or first role if all are admin)
+    const defaultRole = this.roles().find(r => !r.is_admin) || this.roles()[0];
+    
     this.userForm = {
       email: '',
       password: '',
       first_name: '',
       last_name: '',
-      role_id: this.roles()[0]?.id ?? null,
+      role_id: defaultRole?.id ?? null,
       is_active: true,
       profile_image: ''
     };

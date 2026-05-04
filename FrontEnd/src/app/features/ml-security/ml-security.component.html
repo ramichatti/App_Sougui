@@ -1,0 +1,51 @@
+<div class="security-container">
+  <div class="security-card">
+    <div class="security-icon">🔒</div>
+    <h1>{{ translate.translate('mlSecurity.title') }}</h1>
+    <p class="subtitle">{{ translate.translate('mlSecurity.subtitle') }}</p>
+
+    <div class="user-info">
+      <div class="avatar">{{ getUserInitials() }}</div>
+      <div class="user-details">
+        <div class="user-name">{{ getUserName() }}</div>
+        <div class="user-role">{{ translate.translate('role.admin') }}</div>
+      </div>
+    </div>
+
+    <div class="security-message">
+      <div class="message-icon">⚠️</div>
+      <div class="message-text">
+        <strong>{{ translate.translate('mlSecurity.accessDenied') }}</strong>
+        <span>{{ translate.translate('mlSecurity.mlModels') }}</span>
+      </div>
+    </div>
+
+    <p class="description">
+      {{ translate.translate('mlSecurity.passwordRequired') }}<br>
+      {{ translate.translate('mlSecurity.expiresInfo') }}
+    </p>
+
+    <div class="form-group">
+      <label>🔑 {{ translate.translate('mlSecurity.adminPassword') }}</label>
+      <input 
+        type="password" 
+        [(ngModel)]="password" 
+        [placeholder]="translate.translate('mlSecurity.passwordPlaceholder')"
+        (keyup.enter)="verifyPassword()"
+        class="form-control">
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      <span>❌</span> {{ errorMessage }}
+    </div>
+
+    <button class="confirm-btn" (click)="verifyPassword()" [disabled]="isLoading">
+      <span *ngIf="!isLoading">🔓 {{ translate.translate('mlSecurity.confirmAccess') }}</span>
+      <span *ngIf="isLoading">⏳ {{ translate.translate('mlSecurity.verifying') }}</span>
+    </button>
+
+    <button class="back-btn" (click)="goBack()">
+      ← {{ translate.translate('mlSecurity.backHome') }}
+    </button>
+  </div>
+</div>

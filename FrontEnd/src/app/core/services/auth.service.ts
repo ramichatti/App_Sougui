@@ -52,6 +52,13 @@ export class AuthService {
     return localStorage.getItem('access_token');
   }
 
+  // ============================================
+  // NOUVELLE MÉTHODE : VÉRIFICATION MOT DE PASSE
+  // ============================================
+  verifyPassword(password: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/verify-password`, { password });
+  }
+
   private setSession(authResult: LoginResponse): void {
     localStorage.setItem('access_token', authResult.access_token);
     localStorage.setItem('user', JSON.stringify(authResult.user));
@@ -76,5 +83,16 @@ export class AuthService {
 
   isAdmin(): boolean {
     return this.currentUser()?.is_admin === true;
+  }
+
+  refreshUser(): void {
+    this.http.get<{ user: User }>(`${this.apiUrl}/auth/me`).subscribe({
+      next: (response) => {
+        const user = response.user;
+        this.currentUser.set(user);
+        localStorage.setItem('user', JSON.stringify(user));
+      },
+      error: () => {}
+    });
   }
 }

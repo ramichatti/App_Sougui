@@ -1,100 +1,82 @@
 <div class="home-container">
   <section class="hero-section">
     <div class="hero-particles"></div>
+    <div class="hero-grid-overlay"></div>
     
     <div class="hero-content">
       <div class="hero-badge-wrapper">
         <div class="hero-badge">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z"/>
           </svg>
-          Ultimate Decision Intelligence Platform
+          {{ translationService.translate('home.hero.badge') }}
         </div>
       </div>
       
       <h1 class="hero-title">
-        <span class="hero-title-main">Transform Data into</span>
+        <span class="hero-title-main">{{ translationService.translate('home.hero.title.main') }}</span>
         <span class="hero-title-highlight">
-          <span class="gradient-text">Intelligent Decisions</span>
+          <span class="gradient-text">{{ translationService.translate('home.hero.title.highlight') }}</span>
         </span>
-        <span class="hero-title-sub">with ML & BI Power</span>
+        <span class="hero-title-sub">{{ translationService.translate('home.hero.title.sub') }}</span>
       </h1>
       
       <p class="hero-subtitle">
-        Harness the power of Machine Learning and Business Intelligence to drive 
-        <span class="highlight-text">data-driven decisions</span> for your handcrafted products business
+        {{ translationService.translate('home.hero.subtitle') }}
       </p>
       
       <div class="hero-features-grid">
-        <div class="hero-feature-box" data-aos="fade-up" data-aos-delay="100">
+        <div class="hero-feature-box">
           <div class="feature-glow feature-glow-blue"></div>
           <div class="hero-feature-icon-large">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3v18h18"/>
+              <path d="M18 17V9"/>
+              <path d="M13 17V5"/>
+              <path d="M8 17v-3"/>
             </svg>
           </div>
-          <h3>Business Intelligence</h3>
-          <p>Real-time dashboards with interactive analytics and KPI tracking</p>
-          <div class="feature-stats">
-            <span class="stat-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
-              </svg>
-              Real-time
-            </span>
-          </div>
+          <h3>{{ translationService.translate('home.hero.feature1') }}</h3>
+          <p>{{ translationService.translate('home.hero.feature1.desc') }}</p>
         </div>
         
-        <div class="hero-feature-box" data-aos="fade-up" data-aos-delay="200">
+        <div class="hero-feature-box">
           <div class="feature-glow feature-glow-purple"></div>
           <div class="hero-feature-icon-large">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6m6-11h-6m-6 0h6"/>
+              <path d="M20.2 7.8l-4.2 4.2m-4 4l-4.2 4.2m12.4 0l-4.2-4.2m-4-4L3.8 7.8"/>
             </svg>
           </div>
-          <h3>Machine Learning</h3>
-          <p>Predictive analytics and intelligent automation for smarter operations</p>
-          <div class="feature-stats">
-            <span class="stat-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-              </svg>
-              AI-Powered
-            </span>
-          </div>
+          <h3>{{ translationService.translate('home.hero.feature2') }}</h3>
+          <p>{{ translationService.translate('home.hero.feature2.desc') }}</p>
         </div>
         
-        <div class="hero-feature-box" data-aos="fade-up" data-aos-delay="300">
+        <div class="hero-feature-box">
           <div class="feature-glow feature-glow-green"></div>
           <div class="hero-feature-icon-large">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M9 12l2 2 4-4"/>
             </svg>
           </div>
-          <h3>Smart Decisions</h3>
-          <p>Data-driven insights and actionable recommendations at your fingertips</p>
-          <div class="feature-stats">
-            <span class="stat-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              Actionable
-            </span>
-          </div>
+          <h3>{{ translationService.translate('home.hero.feature3') }}</h3>
+          <p>{{ translationService.translate('home.hero.feature3.desc') }}</p>
         </div>
       </div>
 
       <div class="hero-cta">
         <button class="hero-cta-primary" (click)="navigateTo('/dashboard')">
-          <span class="btn-text">Start Your Journey</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          <span class="btn-text">{{ translationService.translate('home.hero.cta.start') }}</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14m-7-7l7 7-7 7"/>
           </svg>
           <span class="btn-glow"></span>
         </button>
         <button class="hero-cta-secondary" (click)="scrollToFeatures()">
-          <span class="btn-text">Explore Features</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <span class="btn-text">{{ translationService.translate('home.hero.cta.explore') }}</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
@@ -102,22 +84,24 @@
 
       <div class="hero-trust-badges">
         <div class="trust-badge">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
           </svg>
-          <span>Enterprise-Grade Security</span>
+          <span>{{ translationService.translate('home.hero.trust1') }}</span>
         </div>
         <div class="trust-badge">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
           </svg>
-          <span>Lightning Fast Performance</span>
+          <span>{{ translationService.translate('home.hero.trust2') }}</span>
         </div>
         <div class="trust-badge">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
           </svg>
-          <span>24/7 Support Available</span>
+          <span>{{ translationService.translate('home.hero.trust3') }}</span>
         </div>
       </div>
     </div>
@@ -126,47 +110,73 @@
       <div class="hero-circle hero-circle-1"></div>
       <div class="hero-circle hero-circle-2"></div>
       <div class="hero-circle hero-circle-3"></div>
-      <div class="hero-grid-overlay"></div>
     </div>
   </section>
 
   <!-- Stats Strip -->
-  <div class="stats-strip">
+  <section class="stats-strip">
     <div class="stats-strip-content">
       <div class="strip-stat-item">
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 7h-9M14 17H5M17 3v18M10 7v10"/>
+          </svg>
+        </div>
         <span class="strip-stat-value">{{ productsCount() }}+</span>
         <span class="strip-stat-label">{{ translationService.translate('footer.stats.products') }}</span>
       </div>
       <div class="strip-stat-divider"></div>
       <div class="strip-stat-item">
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
         <span class="strip-stat-value">{{ artisansCount() }}+</span>
         <span class="strip-stat-label">{{ translationService.translate('footer.stats.artisans') }}</span>
       </div>
       <div class="strip-stat-divider"></div>
       <div class="strip-stat-item">
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <path d="M20 8v6M23 11h-6"/>
+          </svg>
+        </div>
         <span class="strip-stat-value">{{ clientsCount() }}+</span>
         <span class="strip-stat-label">{{ translationService.translate('footer.stats.clients') }}</span>
       </div>
       <div class="strip-stat-divider"></div>
       <div class="strip-stat-item">
+        <div class="stat-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
         <span class="strip-stat-value">24/7</span>
-        <span class="strip-stat-label">Support</span>
+        <span class="strip-stat-label">{{ translationService.translate('home.stats.support') }}</span>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- Application Purpose Section -->
   <section class="app-purpose-section">
     <div class="app-purpose-content">
-      <div class="purpose-badge">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
-        </svg>
-        {{ translationService.translate('home.purpose.badge') }}
+      <div class="section-header">
+        <div class="purpose-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z"/>
+          </svg>
+          {{ translationService.translate('home.purpose.badge') }}
+        </div>
+        
+        <h2 class="purpose-title">{{ translationService.translate('home.purpose.title') }}</h2>
+        <p class="purpose-description">{{ translationService.translate('home.purpose.description') }}</p>
       </div>
-      
-      <h2 class="purpose-title">{{ translationService.translate('home.purpose.title') }}</h2>
-      <p class="purpose-description">{{ translationService.translate('home.purpose.description') }}</p>
 
       <div class="purpose-grid">
         <div class="purpose-card">
@@ -378,8 +388,8 @@
                 <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
             </div>
-            <h3>Rôles & Privilèges</h3>
-            <p>Gérez les rôles utilisateurs et leurs privilèges d'accès</p>
+            <h3>{{ translationService.translate('home.rolesPrivileges.title') }}</h3>
+            <p>{{ translationService.translate('home.rolesPrivileges.desc') }}</p>
             <button class="feature-btn">
               {{ translationService.translate('home.feature.manage') }}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -395,7 +405,7 @@
               </svg>
             </div>
             <h3>{{ translationService.translate('nav.powerbi') }}</h3>
-            <p>Configurez et gérez vos dashboards Power BI</p>
+            <p>{{ translationService.translate('home.powerbi.desc') }}</p>
             <button class="feature-btn">
               {{ translationService.translate('home.feature.manage') }}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -483,208 +493,11 @@
                 <path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
               </svg>
             </div>
-            <h4>Configurer Dashboards</h4>
-            <p>Ajoutez et configurez de nouveaux dashboards Power BI</p>
+            <h4>{{ translationService.translate('home.dashboards.title') }}</h4>
+            <p>{{ translationService.translate('home.dashboards.desc') }}</p>
           </div>
         }
       }
     </div>
   </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-wave">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 60" preserveAspectRatio="none">
-        <path d="M0,30 C300,60 900,0 1200,30 L1200,60 L0,60 Z" fill="currentColor"/>
-      </svg>
-    </div>
-
-    <div class="footer-content">
-      <!-- Newsletter -->
-      <div class="footer-newsletter">
-        <div class="newsletter-content">
-          <div class="newsletter-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-          </div>
-          <div class="newsletter-text">
-            <h3>{{ translationService.translate('footer.newsletter.title') }}</h3>
-            <p>{{ translationService.translate('footer.newsletter.desc') }}</p>
-          </div>
-          <div class="newsletter-form">
-            <input type="email" class="newsletter-input" [placeholder]="translationService.translate('footer.newsletter.placeholder')">
-            <button class="newsletter-btn">
-              {{ translationService.translate('footer.newsletter.button') }}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer Main -->
-      <div class="footer-main">
-        <!-- Brand -->
-        <div class="footer-brand">
-          <div class="footer-logo-wrapper">
-            <div class="footer-logo-glow"></div>
-            <div class="footer-logo">
-              <img src="assets/images/LogoSougui.png" alt="Sougui" class="footer-logo-img" />
-            </div>
-          </div>
-          <h3>Sougui</h3>
-          <p>{{ translationService.translate('footer.tagline') }}</p>
-
-          <div class="footer-stats">
-            <div class="footer-stat">
-              <span class="stat-number">500+</span>
-              <span class="stat-label">{{ translationService.translate('footer.stats.products') }}</span>
-            </div>
-            <div class="footer-stat">
-              <span class="stat-number">50+</span>
-              <span class="stat-label">{{ translationService.translate('footer.stats.artisans') }}</span>
-            </div>
-            <div class="footer-stat">
-              <span class="stat-number">1K+</span>
-              <span class="stat-label">{{ translationService.translate('footer.stats.clients') }}</span>
-            </div>
-          </div>
-
-          <div class="social-title">{{ translationService.translate('footer.followUs') }}</div>
-          <div class="social-links footer-social">
-            <a class="social-link social-facebook" href="#" (click)="$event.preventDefault()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
-              </svg>
-            </a>
-            <a class="social-link social-instagram" href="#" (click)="$event.preventDefault()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-              </svg>
-            </a>
-            <a class="social-link social-linkedin" href="#" (click)="$event.preventDefault()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
-                <circle cx="4" cy="4" r="2"/>
-              </svg>
-            </a>
-            <a class="social-link social-twitter" href="#" (click)="$event.preventDefault()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- Links -->
-        <div class="footer-links">
-          <div class="footer-column">
-            <h4>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-              </svg>
-              {{ translationService.translate('footer.company') }}
-            </h4>
-            <ul>
-              <li><a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.about') }}</a></li>
-              <li><a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.products') }}</a></li>
-              <li><a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.artisans') }}</a></li>
-              <li><a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.contact') }}</a></li>
-            </ul>
-          </div>
-
-          <div class="footer-column">
-            <h4>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-              </svg>
-              {{ translationService.translate('footer.platform') }}
-            </h4>
-            <ul>
-              <li><a (click)="navigateTo('/dashboard')">{{ translationService.translate('nav.dashboard') }}</a></li>
-              <li><a (click)="navigateTo('/profile')">{{ translationService.translate('nav.profile') }}</a></li>
-              @if (authService.currentUser(); as user) {
-                @if (user.role === 'admin') {
-                  <li><a (click)="navigateTo('/admin/users')">{{ translationService.translate('nav.users') }}</a></li>
-                  <li><a (click)="navigateTo('/admin/roles')">Rôles & Privilèges</a></li>
-                  <li><a (click)="navigateTo('/admin/powerbi')">{{ translationService.translate('nav.powerbi') }}</a></li>
-                }
-              }
-            </ul>
-          </div>
-
-          <div class="footer-column">
-            <h4>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-              </svg>
-              {{ translationService.translate('footer.resources') }}
-            </h4>
-            <ul>
-              <li><a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.blog') }}</a></li>
-              <li><a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.help') }}</a></li>
-              <li><a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.faq') }}</a></li>
-              <li><a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.support') }}</a></li>
-            </ul>
-          </div>
-
-          <div class="footer-column footer-column-cta">
-            <h4>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-              </svg>
-              {{ translationService.translate('footer.visit') }}
-            </h4>
-            <p class="footer-description">{{ translationService.translate('footer.visitDesc') }}</p>
-            <a class="footer-website-btn" href="#" (click)="$event.preventDefault()">
-              <span>{{ translationService.translate('footer.visit') }}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-              </svg>
-            </a>
-            <div class="footer-contact">
-              <a class="contact-item" href="mailto:contact@sougui.tn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-                contact&#64;sougui.tn
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer Bottom -->
-    <div class="footer-bottom">
-      <div class="footer-content">
-        <div class="footer-bottom-content">
-          <p class="footer-copyright">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
-            </svg>
-            {{ currentYear }} Sougui. {{ translationService.translate('footer.rights') }}
-          </p>
-          <div class="footer-legal">
-            <a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.privacy') }}</a>
-            <span class="footer-separator">|</span>
-            <a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.terms') }}</a>
-            <span class="footer-separator">|</span>
-            <a href="#" (click)="$event.preventDefault()">{{ translationService.translate('footer.cookies') }}</a>
-          </div>
-          <p class="footer-made-with">
-            Powered by
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin: 0 4px;">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
-            DataVision Group
-          </p>
-        </div>
-      </div>
-    </div>
-  </footer>
 </div>

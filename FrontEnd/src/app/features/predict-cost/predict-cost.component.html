@@ -1,0 +1,125 @@
+<div class="pc-container">
+  <div class="pc-content">
+
+    <!-- ── Header ────────────────────────────────────────────────────────────── -->
+    <div class="pc-header">
+      <div class="pc-header-left">
+        <div class="pc-header-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="pc-title">{{ translate.translate('predictCost.title') }}</h1>
+          <p class="pc-subtitle">{{ translate.translate('predictCost.subtitle') }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main Card ──────────────────────────────────────────────────────────── -->
+    <div class="pc-card">
+      <div class="card-header">
+        <div class="header-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <polyline points="17 11 19 13 23 9"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h2>{{ translate.translate('predictCost.costSimulation') }}</h2>
+          <p>{{ translate.translate('predictCost.selectForEstimate') }}</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Company Selection -->
+        <div class="form-group">
+          <label for="entreprise">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            {{ translate.translate('predictCost.chooseCompany') }}
+          </label>
+          <select id="entreprise" class="form-control" (change)="onEntrepriseChange($event)">
+            <option value="">{{ translate.translate('predictCost.selectPlaceholder') }}</option>
+            <option *ngFor="let entreprise of entreprises" [value]="entreprise.id">
+              {{ entreprise.nom }} ({{ entreprise.distance }} km)
+            </option>
+          </select>
+        </div>
+
+        <!-- Predict Button -->
+        <button class="predict-btn" (click)="predictCost()" [disabled]="!selectedEntreprise || isLoading">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          <span *ngIf="!isLoading">{{ translate.translate('predictCost.predict') }}</span>
+          <span *ngIf="isLoading">{{ translate.translate('predictCost.predicting') }}</span>
+        </button>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-message">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Result Card -->
+        <div *ngIf="predictionResult" class="result-card">
+          <div class="result-header">
+            <div class="result-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <span class="result-title">{{ translate.translate('predictCost.costEstimate') }}</span>
+          </div>
+          
+          <div class="result-content">
+            <div class="result-info">
+              <span class="info-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                {{ translate.translate('predictCost.company') }}
+              </span>
+              <span class="info-value">{{ predictionResult.entreprise }}</span>
+            </div>
+            <div class="result-info">
+              <span class="info-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                {{ translate.translate('predictCost.distance') }}
+              </span>
+              <span class="info-value">{{ predictionResult.distance }} km</span>
+            </div>
+            <div class="result-divider"></div>
+            <div class="result-amount">
+              <span class="amount-label">{{ translate.translate('predictCost.estimatedCost') }}</span>
+              <span class="amount-value">{{ predictionResult.cout }} <small>dt</small></span>
+            </div>
+            <div class="tarif-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              {{ translate.translate('predictCost.baseRate') }}
+            </div>
+            <div class="timestamp">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ predictionResult.timestamp | date:'dd/MM/yyyy HH:mm' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

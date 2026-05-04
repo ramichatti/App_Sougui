@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { RolesService } from '../../../core/services/roles.service';
 import { AdminService } from '../../../core/services/admin.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { PowerBIService, PowerBIDashboard } from '../../../core/services/powerbi.service';
 import { Role, Privilege, User } from '../../../core/models/user.model';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -41,6 +42,7 @@ export class RolesManagementComponent implements OnInit {
   constructor(
     private rolesService: RolesService,
     private adminService: AdminService,
+    private authService: AuthService,
     private powerbiService: PowerBIService,
     private notif: NotificationService
   ) {}
@@ -115,12 +117,30 @@ export class RolesManagementComponent implements OnInit {
     const editing = this.editingRole();
     if (editing) {
       this.rolesService.updateRole(editing.id, this.roleForm).subscribe({
-        next: () => { this.notif.success('Rôle mis à jour'); this.closeRoleModal(); this.load(); },
+        next: (res) => {
+          // Check if privileges were auto-assigned
+          if (res.message && res.message.includes('privilege(s) automatically assigned')) {
+            this.notif.success('Rôle mis à jour avec tous les privilèges assignés automatiquement');
+          } else {
+            this.notif.success('Rôle mis à jour');
+          }
+          this.closeRoleModal();
+          this.load();
+        },
         error: (err) => this.notif.error(err.error?.error || 'Erreur lors de la mise à jour')
       });
     } else {
       this.rolesService.createRole(this.roleForm).subscribe({
-        next: () => { this.notif.success('Rôle créé'); this.closeRoleModal(); this.load(); },
+        next: (res) => {
+          // Check if privileges were auto-assigned
+          if (res.message && res.message.includes('privilege(s) automatically assigned')) {
+            this.notif.success('Rôle créé avec tous les privilèges assignés automatiquement');
+          } else {
+            this.notif.success('Rôle créé');
+          }
+          this.closeRoleModal();
+          this.load();
+        },
         error: (err) => this.notif.error(err.error?.error || 'Erreur lors de la création')
       });
     }
@@ -157,16 +177,38 @@ export class RolesManagementComponent implements OnInit {
     const role = this.selectedRole();
     if (!role || !this.selectedPrivilegeId) return;
     this.rolesService.assignPrivilege(role.id, this.selectedPrivilegeId).subscribe({
-      next: () => { this.notif.success('Privilège assigné'); this.selectedPrivilegeId = null; this.load(); },
+      next: () => { 
+        this.notif.success('Privilège assigné'); 
+        this.selectedPrivilegeId = null; 
+        this.load();
+        // Rafraîchir les privilèges de l'utilisateur connecté pour mettre à jour la navbar
+        this.refreshCurrentUserIfAffected(role.id);
+      },
       error: (err) => this.notif.error(err.error?.error || 'Erreur')
     });
   }
 
   removePrivilege(role: Role, privilege: Privilege): void {
     this.rolesService.removePrivilege(role.id, privilege.id).subscribe({
-      next: () => { this.notif.success('Privilège retiré'); this.load(); },
+      next: () => { 
+        this.notif.success('Privilège retiré'); 
+        this.load();
+        // Rafraîchir les privilèges de l'utilisateur connecté pour mettre à jour la navbar
+        this.refreshCurrentUserIfAffected(role.id);
+      },
       error: (err) => this.notif.error(err.error?.error || 'Erreur')
     });
+  }
+
+  /**
+   * Rafraîchit les données de l'utilisateur connecté si son rôle est affecté
+   * Cela met à jour automatiquement la navbar grâce aux signals Angular
+   */
+  private refreshCurrentUserIfAffected(affectedRoleId: number): void {
+    const currentUser = this.authService.currentUser();
+    if (currentUser && currentUser.role_id === affectedRoleId) {
+      this.authService.refreshUser();
+    }
   }
 
   unassignedPrivileges(): Privilege[] {
@@ -189,8 +231,15 @@ export class RolesManagementComponent implements OnInit {
   assignUserToCurrentRole(): void {
     const role = this.selectedRole();
     if (!role || !this.selectedUserId) return;
-    this.adminService.updateUser(this.selectedUserId, { role_id: role.id }).subscribe({
-      next: () => { this.notif.success('Utilisateur assigné au rôle'); this.selectedUserId = null; this.load(); },
+    const userId = this.selectedUserId; // Sauvegarder l'ID avant de le réinitialiser
+    this.adminService.updateUser(userId, { role_id: role.id }).subscribe({
+      next: () => { 
+        this.notif.success('Utilisateur assigné au rôle'); 
+        this.selectedUserId = null; 
+        this.load();
+        // Rafraîchir si c'est l'utilisateur connecté
+        this.refreshCurrentUserIfSelf(userId);
+      },
       error: (err) => this.notif.error(err.error?.error || 'Erreur')
     });
   }
@@ -198,7 +247,12 @@ export class RolesManagementComponent implements OnInit {
   removeUserFromRole(user: User): void {
     if (!confirm(`Retirer ${user.first_name} ${user.last_name} de ce rôle ?`)) return;
     this.adminService.updateUser(user.id, { role_id: null }).subscribe({
-      next: () => { this.notif.success('Utilisateur retiré du rôle'); this.load(); },
+      next: () => { 
+        this.notif.success('Utilisateur retiré du rôle'); 
+        this.load();
+        // Rafraîchir si c'est l'utilisateur connecté
+        this.refreshCurrentUserIfSelf(user.id);
+      },
       error: (err) => this.notif.error(err.error?.error || 'Erreur')
     });
   }
@@ -206,9 +260,24 @@ export class RolesManagementComponent implements OnInit {
   saveUserRole(userId: number): void {
     const newRoleId = this.userRoleChanges[userId];
     this.adminService.updateUser(userId, { role_id: newRoleId }).subscribe({
-      next: () => { this.notif.success('Rôle mis à jour'); this.load(); },
+      next: () => { 
+        this.notif.success('Rôle mis à jour'); 
+        this.load();
+        // Rafraîchir si c'est l'utilisateur connecté
+        this.refreshCurrentUserIfSelf(userId);
+      },
       error: (err) => this.notif.error(err.error?.error || 'Erreur')
     });
+  }
+
+  /**
+   * Rafraîchit les données de l'utilisateur connecté si c'est lui qui est modifié
+   */
+  private refreshCurrentUserIfSelf(modifiedUserId: number): void {
+    const currentUser = this.authService.currentUser();
+    if (currentUser && currentUser.id === modifiedUserId) {
+      this.authService.refreshUser();
+    }
   }
 
   hasRoleChanged(userId: number, currentRoleId: number | null): boolean {
@@ -217,6 +286,17 @@ export class RolesManagementComponent implements OnInit {
 
   getUserInitials(user: User): string {
     return `${(user.first_name[0] || '').toUpperCase()}${(user.last_name[0] || '').toUpperCase()}`;
+  }
+
+  hasUserImage(user: User): boolean {
+    return !!(user.profile_image);
+  }
+
+  getUserImage(user: User): string {
+    if (!user.profile_image) return '';
+    return user.profile_image.startsWith('data:image')
+      ? user.profile_image
+      : 'data:image/jpeg;base64,' + user.profile_image;
   }
 
   getRoleName(roleId: number | null): string {

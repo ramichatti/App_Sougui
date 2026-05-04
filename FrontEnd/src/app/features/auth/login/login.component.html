@@ -1,3 +1,5 @@
+<app-toast></app-toast>
+
 <div class="login-container">
   <div class="login-background">
     <div class="shape shape-1"></div>
@@ -5,7 +7,7 @@
     <div class="shape shape-3"></div>
   </div>
 
-  <div class="login-card">
+  <div class="login-card" [class.shake]="shaking()">
     <div class="login-header">
       <div class="logo-container">
         <img src="assets/images/LogoSougui.png" alt="Sougui Logo" class="login-logo" />
@@ -15,8 +17,8 @@
     </div>
 
     <div class="language-selector">
-      <button 
-        class="lang-btn" 
+      <button
+        class="lang-btn"
         [class.active]="translate.currentLanguage() === 'fr'"
         (click)="translate.setLanguage('fr')"
       >
@@ -25,8 +27,8 @@
         </svg>
         Français
       </button>
-      <button 
-        class="lang-btn" 
+      <button
+        class="lang-btn"
         [class.active]="translate.currentLanguage() === 'en'"
         (click)="translate.setLanguage('en')"
       >
@@ -38,7 +40,62 @@
     </div>
 
     <form (ngSubmit)="onSubmit()" class="login-form">
-      @if (errorMessage()) {
+
+      <!-- ── Compte bloqué ─────────────────────────────────── -->
+      @if (errorType() === 'blocked') {
+        <div class="alert alert-blocked">
+          <div class="alert-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+            </svg>
+          </div>
+          <div class="alert-body">
+            <strong class="alert-title">Compte bloqué</strong>
+            <p class="alert-text">Votre compte a été désactivé par l'administrateur.</p>
+            <p class="alert-hint">Contactez le support pour rétablir l'accès.</p>
+          </div>
+        </div>
+      }
+
+      <!-- ── Email introuvable ─────────────────────────────── -->
+      @if (errorType() === 'not_found') {
+        <div class="alert alert-not-found">
+          <div class="alert-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+          </div>
+          <div class="alert-body">
+            <strong class="alert-title">Email introuvable</strong>
+            <p class="alert-text">Aucun compte n'est associé à <em>{{ email }}</em>.</p>
+            <p class="alert-hint">Vérifiez l'orthographe ou contactez votre administrateur.</p>
+          </div>
+        </div>
+      }
+
+      <!-- ── Mot de passe incorrect ─────────────────────────── -->
+      @if (errorType() === 'wrong_password') {
+        <div class="alert alert-wrong-pwd">
+          <div class="alert-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div class="alert-body">
+            <strong class="alert-title">Mot de passe incorrect</strong>
+            <p class="alert-text">Le mot de passe saisi ne correspond pas à ce compte.</p>
+            <a routerLink="/forgot-password" class="alert-link">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+              </svg>
+              Réinitialiser mon mot de passe
+            </a>
+          </div>
+        </div>
+      }
+
+      <!-- ── Erreur générique (champ / réseau) ──────────────── -->
+      @if (errorType() === 'field' || errorType() === 'network') {
         <div class="alert alert-error">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -47,6 +104,7 @@
         </div>
       }
 
+      <!-- ── Champ email ─────────────────────────────────────── -->
       <div class="form-group">
         <label for="email" class="form-label">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -54,18 +112,37 @@
           </svg>
           {{ translate.translate('login.email') }} <span class="required">*</span>
         </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          [(ngModel)]="email"
-          class="form-control"
-          placeholder="votre.email@sougui.com"
-          required
-          autocomplete="email"
-        />
+        <div class="input-wrapper">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            [(ngModel)]="email"
+            class="form-control"
+            [class.input-error]="errorType() === 'not_found'"
+            [class.input-success]="email && email.includes('@') && !errorType()"
+            placeholder="votre.email@sougui.com"
+            (input)="clearError()"
+            required
+            autocomplete="email"
+          />
+          @if (email && email.includes('@') && !errorType()) {
+            <span class="input-icon input-icon-success">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </span>
+          }
+        </div>
+        @if (errorType() === 'not_found') {
+          <span class="field-hint field-hint--error">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            Aucun compte trouvé pour cet email
+          </span>
+        }
       </div>
 
+      <!-- ── Champ mot de passe ─────────────────────────────── -->
       <div class="form-group">
         <label for="password" class="form-label">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -73,17 +150,39 @@
           </svg>
           {{ translate.translate('login.password') }} <span class="required">*</span>
         </label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          [(ngModel)]="password"
-          class="form-control"
-          placeholder="••••••••"
-          required
-          minlength="6"
-          autocomplete="current-password"
-        />
+        <div class="password-wrapper">
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            class="form-control"
+            [class.input-error]="errorType() === 'wrong_password'"
+            placeholder="••••••••"
+            (input)="clearError()"
+            required
+            minlength="6"
+            autocomplete="current-password"
+          />
+          <button type="button" class="password-toggle" (click)="togglePassword()" tabindex="-1" [title]="showPassword() ? 'Masquer' : 'Afficher'">
+            @if (showPassword()) {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"/>
+              </svg>
+            } @else {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            }
+          </button>
+        </div>
+        @if (errorType() === 'wrong_password') {
+          <span class="field-hint field-hint--error">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            Mot de passe erroné — vérifiez et réessayez
+          </span>
+        }
       </div>
 
       <div class="forgot-password-link">
@@ -113,9 +212,5 @@
         }
       </button>
     </form>
-
-    <div class="login-footer">
-      <p>{{ translate.translate('login.footer') }}</p>
-    </div>
   </div>
 </div>

@@ -68,7 +68,7 @@ class Privilege(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
-    dashboard_id = db.Column(db.Integer, db.ForeignKey('powerbi_dashboards.id', ondelete='SET NULL'), nullable=True)
+    dashboard_id = db.Column(db.Integer, db.ForeignKey('powerbi_dashboards.id', ondelete='CASCADE'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     dashboard = db.relationship('PowerBIDashboard', backref='privileges')
@@ -80,6 +80,7 @@ class Privilege(db.Model):
             'description': self.description,
             'dashboard_id': self.dashboard_id,
             'dashboard_name': self.dashboard.dashboard_name if self.dashboard else None,
+            'dashboard_is_active': self.dashboard.is_active if self.dashboard else None,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
@@ -92,7 +93,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id', ondelete='SET NULL'), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     profile_image = db.Column(db.LargeBinary, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -103,6 +104,10 @@ class User(db.Model):
 
     password_change_code = db.Column(db.String(6), nullable=True)
     password_change_code_expires = db.Column(db.DateTime, nullable=True)
+
+    email_change_code = db.Column(db.String(6), nullable=True)
+    email_change_code_expires = db.Column(db.DateTime, nullable=True)
+    pending_email = db.Column(db.String(120), nullable=True)
 
     role_rel = db.relationship('Role', backref='users')
 
@@ -149,55 +154,158 @@ class User(db.Model):
         return data
 
 
-class Reclamation(db.Model):
-    __tablename__ = 'reclamations'
+class AppNotification(db.Model):
+    __tablename__ = 'app_notifications'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    category = db.Column(db.Enum('technique', 'commercial', 'produit', 'service', 'autre'), nullable=False)
-    priority = db.Column(db.Enum('basse', 'moyenne', 'haute', 'urgente'), default='moyenne')
-    status = db.Column(db.Enum('nouvelle', 'en_cours', 'resolue', 'fermee'), default='nouvelle')
-    response = db.Column(db.Text, nullable=True)
-    attachment = db.Column(db.LargeBinary, nullable=True)
-    attachment_name = db.Column(db.String(255), nullable=True)
-    attachment_type = db.Column(db.String(100), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    type = db.Column(db.String(50), default='privilege')
+    is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    resolved_at = db.Column(db.DateTime, nullable=True)
-    admin_notified = db.Column(db.Boolean, default=False)
 
-    user = db.relationship('User', backref='reclamations')
+    user = db.relationship('User', backref='notifications')
 
     def to_dict(self):
-        import base64
-        user_image = None
-        if self.user.profile_image:
-            user_image = base64.b64encode(self.user.profile_image).decode('utf-8')
-
-        attachment_data = None
-        if self.attachment:
-            attachment_data = base64.b64encode(self.attachment).decode('utf-8')
-
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'user_name': f"{self.user.first_name} {self.user.last_name}",
-            'user_email': self.user.email,
-            'user_image': user_image,
             'title': self.title,
-            'description': self.description,
-            'category': self.category,
-            'priority': self.priority,
-            'status': self.status,
-            'response': self.response,
-            'has_attachment': self.attachment is not None,
-            'attachment_name': self.attachment_name,
-            'attachment_type': self.attachment_type,
-            'attachment_data': attachment_data,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'message': self.message,
+            'type': self.type,
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+# ============================================================================
+# Modèles pour le système de gestion des produits et commandes
+# ============================================================================
+
+class Produit(db.Model):
+    __tablename__ = 'dim_produit'
+    # Schema removed for MySQL compatibility
+
+    Id_Produit = db.Column(db.Integer, primary_key=True)
+    Produit_Reference = db.Column(db.String(100))
+    Produit_Nom = db.Column(db.String(255))
+    Produit_Description = db.Column(db.String(500))
+    Produit_Categorie = db.Column(db.String(100))
+    Produit_PU_HT = db.Column(db.Numeric(10, 2))
+
+    def to_dict(self):
+        return {
+            'Id_Produit': self.Id_Produit,
+            'Produit_Reference': self.Produit_Reference or '',
+            'Produit_Nom': self.Produit_Nom or '',
+            'Produit_Description': self.Produit_Description or '',
+            'Produit_Categorie': self.Produit_Categorie or '',
+            'Produit_PU_HT': float(self.Produit_PU_HT) if self.Produit_PU_HT else 0.0
+        }
+
+
+class Client(db.Model):
+    __tablename__ = 'dim_client'
+    # Schema removed for MySQL compatibility
+
+    Id_Client = db.Column(db.Integer, primary_key=True)
+    Client_Nom = db.Column(db.String(255))
+    Client_Prenom = db.Column(db.String(255))
+    Client_Email = db.Column(db.String(255))
+    Client_Telephone = db.Column(db.String(50))
+    Client_Adresse = db.Column(db.String(500))
+    Client_Ville = db.Column(db.String(100))
+    Client_Code_Postal = db.Column(db.String(20))
+
+    def to_dict(self):
+        return {
+            'Id_Client': self.Id_Client,
+            'Client_Nom': self.Client_Nom or '',
+            'Client_Prenom': self.Client_Prenom or '',
+            'Client_Email': self.Client_Email or '',
+            'Client_Telephone': self.Client_Telephone or '',
+            'Client_Adresse': self.Client_Adresse or '',
+            'Client_Ville': self.Client_Ville or '',
+            'Client_Code_Postal': self.Client_Code_Postal or ''
+        }
+
+
+class Commande(db.Model):
+    __tablename__ = 'fact_commande'
+    # Schema removed for MySQL compatibility
+
+    Id_Commande = db.Column(db.Integer, primary_key=True)
+    Id_Client = db.Column(db.Integer, db.ForeignKey('dim_client.Id_Client'))
+    Date_Commande = db.Column(db.DateTime)
+    Statut_Commande = db.Column(db.String(50))
+    Montant_Total = db.Column(db.Numeric(10, 2))
+
+    def to_dict(self):
+        return {
+            'Id_Commande': self.Id_Commande,
+            'Id_Client': self.Id_Client,
+            'Date_Commande': self.Date_Commande.isoformat() if self.Date_Commande else None,
+            'Statut_Commande': self.Statut_Commande or '',
+            'Montant_Total': float(self.Montant_Total) if self.Montant_Total else 0.0
+        }
+
+
+class LigneCommande(db.Model):
+    __tablename__ = 'fact_ligne_commande'
+    # Schema removed for MySQL compatibility
+
+    Id_Ligne = db.Column(db.Integer, primary_key=True)
+    Id_Commande = db.Column(db.Integer, db.ForeignKey('fact_commande.Id_Commande'))
+    Id_Produit = db.Column(db.Integer, db.ForeignKey('dim_produit.Id_Produit'))
+    Quantite = db.Column(db.Integer)
+    Prix_Unitaire = db.Column(db.Numeric(10, 2))
+    Montant_Ligne = db.Column(db.Numeric(10, 2))
+
+    def to_dict(self):
+        return {
+            'Id_Ligne': self.Id_Ligne,
+            'Id_Commande': self.Id_Commande,
+            'Id_Produit': self.Id_Produit,
+            'Quantite': self.Quantite or 0,
+            'Prix_Unitaire': float(self.Prix_Unitaire) if self.Prix_Unitaire else 0.0,
+            'Montant_Ligne': float(self.Montant_Ligne) if self.Montant_Ligne else 0.0
+        }
+
+
+# ============================================================================
+# Modèle pour les paramètres email (Configuration SMTP)
+# ============================================================================
+
+class EmailSettings(db.Model):
+    __tablename__ = 'email_settings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    mail_server = db.Column(db.String(255), nullable=False)
+    mail_port = db.Column(db.Integer, nullable=False)
+    mail_use_tls = db.Column(db.Boolean, default=True)
+    mail_username = db.Column(db.String(255), nullable=False)
+    mail_password = db.Column(db.String(255), nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    updater = db.relationship('User', backref='email_settings_updates', foreign_keys=[updated_by])
+
+    @property
+    def updated_by_name(self):
+        if self.updater:
+            return f"{self.updater.first_name} {self.updater.last_name}"
+        return None
+
+    def to_dict(self, mask_password=True):
+        return {
+            'id': self.id,
+            'mail_server': self.mail_server,
+            'mail_port': self.mail_port,
+            'mail_use_tls': self.mail_use_tls,
+            'mail_username': self.mail_username,
+            'mail_password': '********' if mask_password else self.mail_password,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
-            'admin_notified': self.admin_notified
+            'updated_by': self.updated_by,
+            'updated_by_name': self.updated_by_name
         }

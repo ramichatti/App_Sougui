@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, User, Role, Privilege, PowerBIDashboard
+from models import db, User, Role, Privilege, PowerBIDashboard, AppNotification
 
 roles_bp = Blueprint('roles', __name__, url_prefix='/api/roles')
 
@@ -33,7 +33,7 @@ def list_roles():
 @roles_bp.route('', methods=['POST'])
 @jwt_required()
 def create_role():
-    """Create a new role (admin only)."""
+    """Create a new role (admin only). If is_admin=True, automatically assign all privileges."""
     try:
         user, err = _require_admin()
         if err:
@@ -46,16 +46,38 @@ def create_role():
         if Role.query.filter_by(name=data['name']).first():
             return jsonify({'error': 'A role with that name already exists'}), 400
 
+        is_admin = bool(data.get('is_admin', False))
+
         role = Role(
             name=data['name'].strip(),
             description=data.get('description', ''),
-            is_admin=bool(data.get('is_admin', False)),
+            is_admin=is_admin,
             is_system=False,
             is_active=bool(data.get('is_active', True))
         )
         db.session.add(role)
+        db.session.flush()  # Get role.id before commit
+
+        # If is_admin=True, automatically assign all privileges
+        if is_admin:
+            all_privileges = Privilege.query.all()
+            for privilege in all_privileges:
+                if privilege not in role.privileges:
+                    role.privileges.append(privilege)
+            
+            print(f"\n✅ Admin role created: {role.name}")
+            print(f"   → Automatically assigned {len(all_privileges)} privilege(s)")
+
         db.session.commit()
-        return jsonify({'message': 'Role created', 'role': role.to_dict(include_privileges=True)}), 201
+        
+        message = 'Role created'
+        if is_admin and all_privileges:
+            message += f' with {len(all_privileges)} privilege(s) automatically assigned'
+        
+        return jsonify({
+            'message': message,
+            'role': role.to_dict(include_privileges=True)
+        }), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Failed to create role', 'details': str(e)}), 500
@@ -64,7 +86,7 @@ def create_role():
 @roles_bp.route('/<int:role_id>', methods=['PUT'])
 @jwt_required()
 def update_role(role_id):
-    """Update a role (admin only)."""
+    """Update a role (admin only). If is_admin changes to True, assign all privileges."""
     try:
         user, err = _require_admin()
         if err:
@@ -75,6 +97,10 @@ def update_role(role_id):
             return jsonify({'error': 'Role not found'}), 404
 
         data = request.get_json()
+        
+        # Track if is_admin is being changed
+        was_admin = role.is_admin
+        new_is_admin = bool(data.get('is_admin', role.is_admin)) if 'is_admin' in data else role.is_admin
 
         if 'name' in data and data['name']:
             existing = Role.query.filter_by(name=data['name']).first()
@@ -90,10 +116,29 @@ def update_role(role_id):
 
         # Only allow changing is_admin on non-system roles
         if 'is_admin' in data and not role.is_system:
-            role.is_admin = bool(data['is_admin'])
+            role.is_admin = new_is_admin
+            
+            # If changing from non-admin to admin, assign all privileges
+            if not was_admin and new_is_admin:
+                all_privileges = Privilege.query.all()
+                for privilege in all_privileges:
+                    if privilege not in role.privileges:
+                        role.privileges.append(privilege)
+                
+                print(f"\n✅ Role upgraded to admin: {role.name}")
+                print(f"   → Automatically assigned {len(all_privileges)} privilege(s)")
 
         db.session.commit()
-        return jsonify({'message': 'Role updated', 'role': role.to_dict(include_privileges=True)}), 200
+        
+        message = 'Role updated'
+        if not was_admin and new_is_admin:
+            all_privileges = Privilege.query.all()
+            message += f' and {len(all_privileges)} privilege(s) automatically assigned'
+        
+        return jsonify({
+            'message': message,
+            'role': role.to_dict(include_privileges=True)
+        }), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Failed to update role', 'details': str(e)}), 500
@@ -102,7 +147,7 @@ def update_role(role_id):
 @roles_bp.route('/<int:role_id>', methods=['DELETE'])
 @jwt_required()
 def delete_role(role_id):
-    """Delete a role (admin only, non-system roles only)."""
+    """Delete a role (admin only, non-system roles only). Unassigns users from this role."""
     try:
         user, err = _require_admin()
         if err:
@@ -115,12 +160,22 @@ def delete_role(role_id):
         if role.is_system:
             return jsonify({'error': 'System roles cannot be deleted'}), 400
 
-        if role.users:
-            return jsonify({'error': f'Cannot delete role — {len(role.users)} user(s) are assigned to it'}), 400
+        # Unassign all users with this role (set role_id to NULL)
+        users_with_role = User.query.filter_by(role_id=role_id).all()
+        user_count = len(users_with_role)
+        
+        for user_to_update in users_with_role:
+            user_to_update.role_id = None
 
+        # Delete the role
         db.session.delete(role)
         db.session.commit()
-        return jsonify({'message': 'Role deleted'}), 200
+        
+        message = f'Role deleted successfully'
+        if user_count > 0:
+            message += f' ({user_count} user(s) unassigned from this role)'
+        
+        return jsonify({'message': message}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Failed to delete role', 'details': str(e)}), 500
@@ -150,9 +205,40 @@ def assign_privilege(role_id):
         if not privilege:
             return jsonify({'error': 'Privilege not found'}), 404
 
-        if privilege not in role.privileges:
+        newly_added = privilege not in role.privileges
+        if newly_added:
             role.privileges.append(privilege)
             db.session.commit()
+
+            # Notify all active users with this role
+            affected_users = User.query.filter_by(role_id=role.id, is_active=True).all()
+            dashboard_name = privilege.dashboard.dashboard_name if privilege.dashboard else privilege.name
+            title = 'Nouveau privilège accordé'
+            message = f'Le privilège "{privilege.name}" ({dashboard_name}) a été ajouté à votre rôle {role.name}.'
+
+            for affected_user in affected_users:
+                notif = AppNotification(
+                    user_id=affected_user.id,
+                    title=title,
+                    message=message,
+                    type='privilege'
+                )
+                db.session.add(notif)
+
+            db.session.commit()
+
+            # Send emails asynchronously (best-effort)
+            from app import mail
+            from utils import send_privilege_notification_email
+            for affected_user in affected_users:
+                send_privilege_notification_email(
+                    mail,
+                    affected_user.email,
+                    f'{affected_user.first_name} {affected_user.last_name}',
+                    privilege.name,
+                    dashboard_name,
+                    role.name
+                )
 
         return jsonify({'message': 'Privilege assigned', 'role': role.to_dict(include_privileges=True)}), 200
     except Exception as e:
@@ -179,6 +265,21 @@ def remove_privilege(role_id, privilege_id):
 
         if privilege in role.privileges:
             role.privileges.remove(privilege)
+            db.session.commit()
+
+            # Notify affected users
+            affected_users = User.query.filter_by(role_id=role.id, is_active=True).all()
+            dashboard_name = privilege.dashboard.dashboard_name if privilege.dashboard else privilege.name
+            title = 'Privilège retiré'
+            message = f'Le privilège "{privilege.name}" ({dashboard_name}) a été retiré de votre rôle {role.name}.'
+            for affected_user in affected_users:
+                notif = AppNotification(
+                    user_id=affected_user.id,
+                    title=title,
+                    message=message,
+                    type='privilege'
+                )
+                db.session.add(notif)
             db.session.commit()
 
         return jsonify({'message': 'Privilege removed', 'role': role.to_dict(include_privileges=True)}), 200

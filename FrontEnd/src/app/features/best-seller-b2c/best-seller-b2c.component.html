@@ -1,0 +1,305 @@
+<div class="dp-container">
+  <div class="dp-content">
+
+    <!-- Header -->
+    <div class="dp-header">
+      <div class="dp-header-left">
+        <div class="dp-header-icon bs-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="dp-title">{{ translate.translate('bestSeller.title') }}</h1>
+          <p class="dp-subtitle">{{ translate.translate('bestSeller.subtitle') }}</p>
+        </div>
+      </div>
+      <div class="dp-header-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+        </svg>
+        Random Forest
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card kpi--blue">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 7h-9M14 17H5M17 12H3"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ products().length }}</div>
+          <div class="kpi-lbl">{{ translate.translate('bestSeller.totalProducts') }}</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi--green">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ predictionResult()?.best_seller_probability || 0 }}%</div>
+          <div class="kpi-lbl">{{ translate.translate('bestSeller.probability') }}</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi--purple">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ predictionResult()?.prediction_label || '—' }}</div>
+          <div class="kpi-lbl">{{ translate.translate('bestSeller.status') }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="split">
+
+      <!-- Left: Product Selection -->
+      <div class="split-left">
+        <div class="panel-head">
+          <div class="panel-head-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+            <span class="panel-title">{{ translate.translate('bestSeller.selectProduct') }}</span>
+            <span class="count-chip">{{ filteredProducts().length }}</span>
+          </div>
+          <span class="panel-source">DWH</span>
+        </div>
+
+        <!-- Search -->
+        <div class="panel-search" [class.panel-search--active]="searchTerm.length > 0">
+          @if (isSearching()) {
+            <div class="search-spinner"></div>
+          } @else {
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          }
+          <input class="panel-search-input" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+                 [placeholder]="translate.translate('bestSeller.searchPlaceholder')"/>
+          @if (searchTerm) {
+            <button class="panel-search-clear" (click)="clearSearch()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          }
+        </div>
+        @if (!searchTerm) {
+          <div class="search-hint">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+            Rechercher par nom ou reference
+          </div>
+        }
+
+        @if (isLoadingProducts()) {
+          <div class="skeleton-list">
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+          </div>
+        }
+
+        <div class="product-list">
+          @for (product of filteredProducts(); track product.Id_Produit) {
+            <div class="product-row" [class.product-row--selected]="selectedProduct()?.Id_Produit === product.Id_Produit"
+                 (click)="selectProduct(product)">
+              <div class="product-avatar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+              <div class="product-info">
+                <div class="product-name">
+                  {{ product.Produit_Nom || product.Produit_Reference }}
+                  <span class="product-badge">{{ product.Produit_Categorie }}</span>
+                </div>
+                <div class="product-desc">{{ product.Produit_Reference }} — {{ product.Produit_Description }}</div>
+                <div class="product-meta">
+                  <span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    {{ product.Produit_PU_HT }} dt
+                  </span>
+                  @if (product.Nb_Ventes) {
+                    <span class="meta-sales">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+                      </svg>
+                      {{ product.Nb_Ventes }} ventes
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+          @if (!isLoadingProducts() && filteredProducts().length === 0) {
+            <div class="list-empty">
+              @if (searchTerm) {
+                <p>{{ translate.translate('bestSeller.noResults') }} "{{ searchTerm }}"</p>
+              } @else {
+                <p>{{ translate.translate('bestSeller.noProducts') }}</p>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Right: Prediction Results -->
+      <div class="split-right">
+        @if (selectedProduct(); as product) {
+          <div class="detail-card">
+
+            <!-- Product Details -->
+            <div class="detail-head">
+              <div class="detail-avatar bs-avatar">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+              <div class="detail-head-info">
+                <h3 class="detail-name">{{ product.Produit_Nom || product.Produit_Reference }}</h3>
+                <p class="detail-desc">{{ product.Produit_Reference }} — {{ product.Produit_Description }}</p>
+                <div class="detail-pills">
+                  <span class="pill pill--category">{{ product.Produit_Categorie }}</span>
+                  <span class="pill pill--price">{{ product.Produit_PU_HT }} dt</span>
+                </div>
+              </div>
+              <button class="close-btn" (click)="clearSelection()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Predict Button -->
+            <div class="predict-section">
+              <button class="predict-btn bs-predict-btn" (click)="predictBestSeller()" [disabled]="isPredicting()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span *ngIf="!isPredicting()">{{ translate.translate('bestSeller.predict') }}</span>
+                <span *ngIf="isPredicting()">{{ translate.translate('bestSeller.predicting') }}</span>
+              </button>
+            </div>
+
+            <!-- Error Message -->
+            @if (errorMessage()) {
+              <div class="error-message">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                {{ errorMessage() }}
+              </div>
+            }
+
+            <!-- Prediction Results -->
+            @if (predictionResult(); as result) {
+              <div class="result-section">
+                <div class="section-head">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  {{ translate.translate('bestSeller.result') }}
+                </div>
+
+                <!-- Best Seller Badge -->
+                <div class="bs-badge-wrapper" [class.bs-badge--yes]="result.is_best_seller" [class.bs-badge--no]="!result.is_best_seller">
+                  <div class="bs-badge-icon">
+                    @if (result.is_best_seller) {
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    } @else {
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M15 9l-6 6M9 9l6 6"/>
+                      </svg>
+                    }
+                  </div>
+                  <div class="bs-badge-text">
+                    <div class="bs-badge-label">{{ result.prediction_label }}</div>
+                    <div class="bs-badge-prob" [style.color]="getProbColor(result.best_seller_probability)">
+                      {{ result.best_seller_probability }}% — {{ getProbLabel(result.best_seller_probability) }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Probability Bar -->
+                <div class="prob-bar-wrapper">
+                  <div class="prob-bar-label">{{ translate.translate('bestSeller.probability') }}</div>
+                  <div class="prob-bar-track">
+                    <div class="prob-bar-fill" [style.width.%]="result.best_seller_probability" [style.background]="getProbColor(result.best_seller_probability)"></div>
+                  </div>
+                  <div class="prob-bar-value" [style.color]="getProbColor(result.best_seller_probability)">{{ result.best_seller_probability }}%</div>
+                </div>
+
+                <!-- Features Used -->
+                <div class="features-grid">
+                  <div class="feature-card">
+                    <div class="feature-val">{{ result.features_used.total_qty }}</div>
+                    <div class="feature-lbl">{{ translate.translate('bestSeller.totalQty') }}</div>
+                  </div>
+                  <div class="feature-card">
+                    <div class="feature-val">{{ result.features_used.nb_commandes }}</div>
+                    <div class="feature-lbl">{{ translate.translate('bestSeller.nbOrders') }}</div>
+                  </div>
+                  <div class="feature-card">
+                    <div class="feature-val">{{ result.features_used.nb_clients }}</div>
+                    <div class="feature-lbl">{{ translate.translate('bestSeller.nbClients') }}</div>
+                  </div>
+                  <div class="feature-card">
+                    <div class="feature-val">{{ result.features_used.ca_ht }} dt</div>
+                    <div class="feature-lbl">{{ translate.translate('bestSeller.caHT') }}</div>
+                  </div>
+                  <div class="feature-card">
+                    <div class="feature-val">{{ result.features_used.rolling_mean_3 }}</div>
+                    <div class="feature-lbl">{{ translate.translate('bestSeller.rollingMean') }}</div>
+                  </div>
+                  <div class="feature-card">
+                    <div class="feature-val">{{ result.features_used.pu_ht }} dt</div>
+                    <div class="feature-lbl">{{ translate.translate('bestSeller.puHT') }}</div>
+                  </div>
+                </div>
+
+                <div class="timestamp">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  {{ result.timestamp | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+              </div>
+            }
+
+          </div>
+        } @else {
+          <div class="detail-empty">
+            <div class="detail-empty-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <h4>{{ translate.translate('bestSeller.selectProductTitle') }}</h4>
+            <p>{{ translate.translate('bestSeller.selectProductDesc') }}</p>
+          </div>
+        }
+      </div>
+
+    </div>
+
+  </div>
+</div>

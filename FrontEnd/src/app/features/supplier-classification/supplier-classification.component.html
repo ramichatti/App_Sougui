@@ -1,0 +1,360 @@
+<div class="sc-container">
+  <div class="sc-content">
+
+    <!-- ── Header ────────────────────────────────────────────────────────────── -->
+    <div class="sc-header">
+      <div class="sc-header-left">
+        <div class="sc-header-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <polyline points="17 11 19 13 23 9"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="sc-title">{{ translate.translate('supplierClassification.title') }}</h1>
+          <p class="sc-subtitle">{{ translate.translate('supplierClassification.subtitle') }}</p>
+        </div>
+      </div>
+      <div class="sc-header-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+        Random Forest
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card kpi--blue">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ filteredSuppliers().length }}</div>
+          <div class="kpi-lbl">{{ translate.translate('supplierClassification.totalSuppliers') }}</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi--green">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ (classificationResult()?.probability || 0) | number:'1.0-0' }}%</div>
+          <div class="kpi-lbl">{{ translate.translate('supplierClassification.confidence') }}</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi--purple">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-val">{{ classificationResult()?.prediction_label || '—' }}</div>
+          <div class="kpi-lbl">{{ translate.translate('supplierClassification.segment') }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="split">
+
+      <!-- Left: Supplier Selection -->
+      <div class="split-left">
+        <div class="panel-head">
+          <div class="panel-head-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+            <span class="panel-title">{{ translate.translate('supplierClassification.selectSupplier') }}</span>
+            <span class="count-chip">{{ filteredSuppliers().length }}</span>
+          </div>
+          <span class="panel-source">DWH</span>
+        </div>
+
+        <!-- Search -->
+        <div class="panel-search" [class.panel-search--active]="searchTerm.length > 0">
+          @if (isSearching()) {
+            <div class="search-spinner"></div>
+          } @else {
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          }
+          <input class="panel-search-input" type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+                 [placeholder]="translate.translate('supplierClassification.searchSupplier')"/>
+          @if (searchTerm) {
+            <button class="panel-search-clear" (click)="clearSearch()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          }
+        </div>
+
+        @if (!searchTerm) {
+          <div class="search-hint">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            {{ translate.translate('supplierClassification.searchHint') }}
+          </div>
+        }
+
+        <!-- Suppliers List -->
+        <div class="suppliers-list">
+          @if (isLoadingSuppliers()) {
+            <div class="loading-state">
+              <div class="loading-spinner"></div>
+              <span>{{ translate.translate('supplierClassification.loading') }}</span>
+            </div>
+          } @else if (filteredSuppliers().length === 0 && searchTerm) {
+            <div class="empty-state">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span>{{ translate.translate('supplierClassification.noSuppliersForSearch') }} "{{ searchTerm }}"</span>
+            </div>
+          } @else if (filteredSuppliers().length === 0) {
+            <div class="empty-state">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+              </svg>
+              <span>{{ translate.translate('supplierClassification.noSuppliersFound') }}</span>
+            </div>
+          } @else {
+            @for (supplier of filteredSuppliers(); track supplier.id) {
+              <div class="supplier-item" 
+                   [class.supplier-item--selected]="selectedSupplier()?.id === supplier.id"
+                   (click)="selectSupplier(supplier)">
+                <div class="supplier-main">
+                  <div class="supplier-name">{{ supplier.nom }}</div>
+                  <div class="supplier-matricule">{{ supplier.matricule_fiscal }}</div>
+                  <div class="supplier-meta">
+                    <div class="supplier-stat">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                      </svg>
+                      {{ supplier.nb_factures }} {{ translate.translate('supplierClassification.nbInvoices') }}
+                    </div>
+                    <div class="supplier-stat">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                      </svg>
+                      {{ supplier.montant_total_ht | number:'1.0-0' }} TND
+                    </div>
+                  </div>
+                  <div class="supplier-payment" [class]="getPaymentRateClass(supplier.taux_paiement)">
+                    {{ translate.translate('supplierClassification.paymentRate') }}: {{ supplier.taux_paiement }}%
+                  </div>
+                </div>
+                <div class="supplier-arrow">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5l7 7-7 7"/>
+                  </svg>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Right: Classification Panel -->
+      <div class="split-right">
+        @if (!selectedSupplier()) {
+          <div class="empty-panel">
+            <div class="empty-panel-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <polyline points="17 11 19 13 23 9"/>
+              </svg>
+            </div>
+            <h3>{{ translate.translate('supplierClassification.selectSupplierToStart') }}</h3>
+            <p>{{ translate.translate('supplierClassification.selectSupplierDesc') }}</p>
+          </div>
+        } @else {
+          <!-- Supplier Info -->
+          <div class="info-panel">
+            <div class="info-panel-head">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              <span>{{ translate.translate('supplierClassification.supplierInfo') }}</span>
+            </div>
+            <div class="info-panel-body">
+              <div class="supplier-info">
+                <div class="supplier-info-main">
+                  <div class="supplier-info-name">{{ selectedSupplier()!.nom }}</div>
+                  <div class="supplier-info-matricule">{{ selectedSupplier()!.matricule_fiscal }}</div>
+                  @if (selectedSupplier()!.telephone) {
+                    <div class="supplier-info-phone">📞 {{ selectedSupplier()!.telephone }}</div>
+                  }
+                </div>
+              </div>
+              <div class="supplier-metrics">
+                <div class="metric-row">
+                  <span>{{ translate.translate('supplierClassification.nbInvoices') }}:</span>
+                  <span>{{ selectedSupplier()!.nb_factures }}</span>
+                </div>
+                <div class="metric-row">
+                  <span>{{ translate.translate('supplierClassification.nbProducts') }}:</span>
+                  <span>{{ selectedSupplier()!.nb_produits }}</span>
+                </div>
+                <div class="metric-row">
+                  <span>{{ translate.translate('supplierClassification.totalAmount') }}:</span>
+                  <span>{{ selectedSupplier()!.montant_total_ht | number:'1.2-2' }} TND</span>
+                </div>
+                <div class="metric-row">
+                  <span>{{ translate.translate('supplierClassification.remainingDue') }}:</span>
+                  <span>{{ selectedSupplier()!.total_reste_du | number:'1.2-2' }} TND</span>
+                </div>
+                <div class="metric-row">
+                  <span>{{ translate.translate('supplierClassification.paymentRate') }}:</span>
+                  <span [class]="getPaymentRateClass(selectedSupplier()!.taux_paiement)">
+                    {{ selectedSupplier()!.taux_paiement }}%
+                  </span>
+                </div>
+                <div class="metric-row">
+                  <span>{{ translate.translate('supplierClassification.recency') }}:</span>
+                  <span [class]="getRecencyClass(selectedSupplier()!.jours_depuis_dernier_achat)">
+                    {{ selectedSupplier()!.jours_depuis_dernier_achat }} {{ translate.translate('supplierClassification.daysAgo') }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Classify Button -->
+          <div class="classify-panel">
+            <button class="classify-btn"
+                    (click)="classifySupplier()"
+                    [disabled]="isClassifying()">
+              @if (isClassifying()) {
+                <div class="btn-spinner"></div>
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              }
+              <span>{{ isClassifying() ? translate.translate('supplierClassification.classifying') : translate.translate('supplierClassification.segmentBtn') }}</span>
+            </button>
+          </div>
+
+          <!-- Results -->
+          @if (classificationResult()) {
+            <div class="result-panel">
+              <div class="result-panel-head" [class]="getSegmentClass(classificationResult()!.segment)">
+                <span class="segment-icon">{{ getSegmentIcon(classificationResult()!.segment) }}</span>
+                <span>{{ translate.translate('supplierClassification.segmentationResult') }}</span>
+              </div>
+              <div class="result-panel-body">
+                <!-- Segment Badge -->
+                <div class="recommendation" [class]="getSegmentClass(classificationResult()!.segment)">
+                  <div class="recommendation-badge">
+                    {{ classificationResult()!.prediction_label }}
+                  </div>
+                  <div class="recommendation-probability">
+                    {{ classificationResult()!.probability }}% {{ translate.translate('supplierClassification.confidence') }}
+                  </div>
+                  <div class="recommendation-confidence" [class]="getSegmentClass(classificationResult()!.segment)">
+                    {{ translate.translate('supplierClassification.confidenceLevel') }}: {{ classificationResult()!.confidence_level }}
+                  </div>
+                </div>
+
+                <!-- AI Analysis -->
+                <div class="analysis-box">
+                  <div class="analysis-message">
+                    {{ classificationResult()!.analysis.recommendation }}
+                  </div>
+                </div>
+
+                <!-- Strengths & Weaknesses -->
+                <div class="swot-analysis">
+                  @if (classificationResult()!.analysis.strengths.length > 0) {
+                    <div class="strengths-section">
+                      <div class="strengths-title">✅ {{ translate.translate('supplierClassification.strengths') }}</div>
+                      <ul class="strengths-list">
+                        @for (strength of classificationResult()!.analysis.strengths; track strength) {
+                          <li>{{ strength }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                  @if (classificationResult()!.analysis.weaknesses.length > 0) {
+                    <div class="weaknesses-section">
+                      <div class="weaknesses-title">⚠️ {{ translate.translate('supplierClassification.weaknesses') }}</div>
+                      <ul class="weaknesses-list">
+                        @for (weakness of classificationResult()!.analysis.weaknesses; track weakness) {
+                          <li>{{ weakness }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                </div>
+
+                <!-- Features Used -->
+                <div class="features-section">
+                  <div class="features-title">📊 {{ translate.translate('supplierClassification.analyzedMetrics') }}</div>
+                  <div class="features-grid">
+                    <div class="feature-item">
+                      <span>{{ translate.translate('supplierClassification.nbInvoices') }}:</span>
+                      <span>{{ classificationResult()!.features_used.nb_factures }}</span>
+                    </div>
+                    <div class="feature-item">
+                      <span>{{ translate.translate('supplierClassification.nbProducts') }}:</span>
+                      <span>{{ classificationResult()!.features_used.nb_produits_differents }}</span>
+                    </div>
+                    <div class="feature-item">
+                      <span>{{ translate.translate('supplierClassification.totalAmount') }}:</span>
+                      <span>{{ classificationResult()!.features_used.montant_total_ht | number:'1.0-0' }} TND</span>
+                    </div>
+                    <div class="feature-item">
+                      <span>{{ translate.translate('supplierClassification.paymentRate') }}:</span>
+                      <span [class]="getPaymentRateClass(classificationResult()!.features_used.taux_paiement)">
+                        {{ classificationResult()!.features_used.taux_paiement }}%
+                      </span>
+                    </div>
+                    <div class="feature-item">
+                      <span>{{ translate.translate('supplierClassification.activeMonths') }}:</span>
+                      <span>{{ classificationResult()!.features_used.nb_mois_actifs }}</span>
+                    </div>
+                    <div class="feature-item">
+                      <span>{{ translate.translate('supplierClassification.lastPurchase') }}:</span>
+                      <span [class]="getRecencyClass(classificationResult()!.features_used.jours_depuis_dernier_achat)">
+                        {{ classificationResult()!.features_used.jours_depuis_dernier_achat }} {{ translate.translate('supplierClassification.days') }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        {{ errorMessage() }}
+      </div>
+    }
+
+  </div>
+</div>

@@ -1,0 +1,137 @@
+<div class="da-container">
+  <div class="da-content">
+
+    <!-- ── Header ────────────────────────────────────────────────────────────── -->
+    <div class="da-header">
+      <div class="da-header-left">
+        <div class="da-header-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="da-title">{{ translate.translate('distance.title') }}</h1>
+          <p class="da-subtitle">{{ translate.translate('distance.subtitle') }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main Card ──────────────────────────────────────────────────────────── -->
+    <div class="da-card">
+      <div class="card-header">
+        <div class="header-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h2>{{ translate.translate('distance.geoAnalysis') }}</h2>
+          <p>{{ translate.translate('distance.selectCompany') }}</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Company Selection -->
+        <div class="form-group">
+          <label for="entreprise">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            {{ translate.translate('distance.chooseCompany') }}
+          </label>
+          <select id="entreprise" class="form-control" (change)="onEntrepriseChange($event)">
+            <option value="">{{ translate.translate('distance.selectPlaceholder') }}</option>
+            <option *ngFor="let entreprise of entreprises" [value]="entreprise.id">
+              {{ entreprise.nom }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Reference Point -->
+        <div class="ref-point">
+          <div class="ref-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="ref-info">
+            <span class="ref-label">{{ translate.translate('distance.referencePoint') }}</span>
+            <span class="ref-coords">{{ souguiLat }}, {{ souguiLon }}</span>
+          </div>
+        </div>
+
+        <!-- Analyze Button -->
+        <button class="analyze-btn" (click)="analyzeDistance()" [disabled]="!selectedEntreprise || isLoading">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span *ngIf="!isLoading">{{ translate.translate('distance.analyze') }}</span>
+          <span *ngIf="isLoading">{{ translate.translate('distance.analyzing') }}</span>
+        </button>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-message">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Result Card -->
+        <div *ngIf="analysisResult" class="result-card" [class.proche]="analysisResult.isProche" [class.loin]="!analysisResult.isProche">
+          <div class="result-header">
+            <div class="result-icon">
+              <svg *ngIf="analysisResult.isProche" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <svg *ngIf="!analysisResult.isProche" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <span class="result-title">{{ analysisResult.isProche ? translate.translate('distance.closeClient') : translate.translate('distance.farClient') }}</span>
+          </div>
+          
+          <div class="result-content">
+            <div class="result-info">
+              <span class="info-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                {{ translate.translate('distance.company') }}
+              </span>
+              <span class="info-value">{{ analysisResult.entreprise }}</span>
+            </div>
+            <div class="result-info">
+              <span class="info-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                {{ translate.translate('distance.calculated') }}
+              </span>
+              <span class="info-value">{{ analysisResult.distance }} km</span>
+            </div>
+            <div class="result-divider"></div>
+            <div class="result-zone">
+              <span class="zone-label">{{ analysisResult.isProche ? translate.translate('distance.proximityZone') : translate.translate('distance.distantZone') }}</span>
+            </div>
+            <div class="result-message">
+              <span>{{ analysisResult.isProche ? translate.translate('distance.fastDelivery') : translate.translate('distance.longDelivery') }}</span>
+            </div>
+            <div class="timestamp">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ analysisResult.timestamp | date:'dd/MM/yyyy HH:mm' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

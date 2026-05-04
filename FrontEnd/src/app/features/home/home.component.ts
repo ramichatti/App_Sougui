@@ -61,34 +61,40 @@ export class HomeComponent implements OnInit {
 
   getRoleLabel(role: string | null): string {
     if (!role) return '';
-    return this.translationService.translate(`role.${role}`);
+    const normalizedRole = role.toLowerCase();
+    return this.translationService.translate(`role.${normalizedRole}`);
   }
 
   getRoleTitle(role: string | null): string {
     if (!role) return '';
-    return this.translationService.translate(`home.role.${role}.title`);
+    const normalizedRole = role.toLowerCase();
+    return this.translationService.translate(`home.role.${normalizedRole}.title`);
   }
 
   getRoleDescription(role: string | null): string {
     if (!role) return '';
-    return this.translationService.translate(`home.role.${role}.description`);
+    const normalizedRole = role.toLowerCase();
+    return this.translationService.translate(`home.role.${normalizedRole}.description`);
   }
 
   getBIDescription(role: string | null): string {
     if (!role) return '';
-    return this.translationService.translate(`home.role.${role}.bi.description`);
+    const normalizedRole = role.toLowerCase();
+    return this.translationService.translate(`home.role.${normalizedRole}.bi.description`);
   }
 
   getMLDescription(role: string | null): string {
     if (!role) return '';
-    return this.translationService.translate(`home.role.${role}.ml.description`);
+    const normalizedRole = role.toLowerCase();
+    return this.translationService.translate(`home.role.${normalizedRole}.ml.description`);
   }
 
   getBIFeatures(role: string | null): string[] {
     if (!role) return [];
+    const normalizedRole = role.toLowerCase();
     const features: string[] = [];
     for (let i = 1; i <= 4; i++) {
-      const key = `home.role.${role}.bi.feature${i}`;
+      const key = `home.role.${normalizedRole}.bi.feature${i}`;
       const translation = this.translationService.translate(key);
       if (translation !== key) features.push(translation);
     }
@@ -97,9 +103,10 @@ export class HomeComponent implements OnInit {
 
   getMLFeatures(role: string | null): string[] {
     if (!role) return [];
+    const normalizedRole = role.toLowerCase();
     const features: string[] = [];
     for (let i = 1; i <= 4; i++) {
-      const key = `home.role.${role}.ml.feature${i}`;
+      const key = `home.role.${normalizedRole}.ml.feature${i}`;
       const translation = this.translationService.translate(key);
       if (translation !== key) features.push(translation);
     }
